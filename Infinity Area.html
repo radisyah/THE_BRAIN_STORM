@@ -562,22 +562,22 @@
                     correctSound.cloneNode(true).play();
                 }
             } else {
-                // Jika jawaban salah, tambahkan kelas 'wrong' tanpa mengurangi skor berulang kali
-                if (!inputElement.classList.contains('wrong')) {
+                // Jika jawaban salah, tambahkan kelas 'wrong'
+                if (!inputElement.classList.contains('wrong') && inputElement.getAttribute('data-scored') !== 'wrong') {
                     inputElement.classList.add('wrong');
-                }
-                // Beri penalti skor hanya sekali untuk jawaban salah
-                if (inputElement.getAttribute('data-scored') !== 'wrong') {
-                    score -= 100; // Penalti skor hanya satu kali untuk jawaban salah
-                    inputElement.setAttribute('data-scored', 'wrong'); // Tandai bahwa penalti sudah diterapkan
-                    wrongSound.cloneNode(true).play();
+                    score -= 100; // Penalti skor untuk jawaban salah
+                    inputElement.setAttribute('data-scored', 'wrong'); // Tandai bahwa input ini sudah diberi skor sebagai wrong
                     // Mainkan suara wrong secara dinamis
+                    wrongSound.cloneNode(true).play();
                 }
             }
             updateScoreDisplay(); // Perbarui tampilan skor
+        } else {
+            // Jika panjang input belum mencukupi, bersihkan kelas 'wrong' dan 'correct'
+            inputElement.classList.remove('correct', 'wrong');
+            inputElement.removeAttribute('data-scored'); // Hapus tanda skor agar bisa dinilai lagi
         }
     }
-
     // Fungsi yang dipanggil setiap kali pengguna mengetik di input
     function handleInput(event, shape) {
         const input = event.target.value;
@@ -738,6 +738,9 @@
         });
     }
 </script>
+    
+
+
 
 </body>
 </html>
