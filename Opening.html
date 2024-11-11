@@ -76,9 +76,11 @@
         <button id="startButton">START GAME</button>
     </div>
 
-    <div id="videoContainer">
-        <video id="introVideo" src="MISSION 1.MP4"controls ></video>
-    </div>
+     <!-- Video element -->
+     <video id="videoContainer" controls autoplay>
+        <source id="introVideo" src="MISSION 3.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
 
     <script>
         const startButton = document.getElementById('startButton');
