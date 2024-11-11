@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Connect Game</title>
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(5, 120px); /* 5 columns */
+            grid-gap: 10px;
+            justify-content: center;
+            margin-top: 50px;
+        }
+
+        .grid-item {
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ccc;
+            position: relative;
+            background-color: white;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .highlighted {
+            background-color: lightgreen; /* Correct step */
+        }
+
+        .blue {
+            background-color: lightblue; /* Temporary path highlight */
+        }
+
+        .locked {
+            background-color: lightgreen; /* Locked grid */
+            cursor: not-allowed;
+        }
+
+        .selected {
+            background-color: lightblue; /* Selected grid for path */
+        }
+    </style>
+</head>
+<body>
+
+<div class="grid-container" id="gridContainer">
+    <!-- Grid items will be generated here -->
+</div>
+
+<script>
+    const totalItems = 20; // Number of grid items
+    const correctPaths = [
+        [1, 6, 7],    // Path 1 -> 6 -> 7
+        [2, 3, 8],    // Path 2 -> 3 -> 8
+        [4, 9, 10, 5] // Path 4 -> 9 -> 10 -> 5
+    ];
+
+    let currentPath = []; // Stores current path
+    let lockedGrids = new Set(); // Stores locked grids that cannot be selected
+
+    // Dynamically generate the grid items
+    const gridContainer = document.getElementById('gridContainer');
+    for (let i = 1; i <= totalItems; i++) {
+        const gridItem = document.createElement('div');
+        gridItem.classList.add('grid-item');
+        gridItem.setAttribute('data-number', i);
+        gridItem.textContent = i;
+        gridContainer.appendChild(gridItem);
+    }
+
+    // Add event listeners to all grid items
+    document.querySelectorAll(".grid-item").forEach(item => {
+        item.addEventListener("click", (event) => {
+            const clickedNumber = parseInt(event.currentTarget.getAttribute("data-number"));
+
+            // Prevent clicking on locked grids
+            if (lockedGrids.has(clickedNumber)) {
+                return;
+            }
+
+            // If no path selected, start a new path
+            if (currentPath.length === 0) {
+                currentPath.push(clickedNumber);
+                item.classList.add("blue");
+                return;
+            }
+
+            // If clicked number is valid for the current path
+            if (isValidStep(clickedNumber)) {
+                currentPath.push(clickedNumber);
+                item.classList.add("blue");
+
+                // Highlight the path so far
+                highlightCurrentPath();
+
+                // If path is complete, lock the path
+                if (isPathComplete()) {
+                    lockPath();
+                }
+            } else {
+                // Reset the path if clicked number is invalid
+                resetPath();
+            }
+        });
+    });
+
+    // Check if the clicked number is a valid next step
+    function isValidStep(clickedNumber) {
+        const lastStep = currentPath[currentPath.length - 1];
+        return correctPaths.some(path => {
+            const lastStepIndex = path.indexOf(lastStep);
+            const clickedIndex = path.indexOf(clickedNumber);
+
+            // Validates if clicked number continues the path or goes in reverse
+            return (lastStepIndex !== -1 && path[lastStepIndex + 1] === clickedNumber) || 
+                   (clickedIndex !== -1 && path[clickedIndex + 1] === lastStep);
+        });
+    }
+
+    // Highlights the current path in the grid
+    function highlightCurrentPath() {
+        document.querySelectorAll(".grid-item").forEach(item => {
+            const number = parseInt(item.getAttribute("data-number"));
+            if (currentPath.includes(number)) {
+                item.classList.add("blue");
+            } else {
+                item.classList.remove("blue");
+            }
+        });
+    }
+
+    // Highlights the correct path with green color
+    function highlightCorrectPath() {
+        document.querySelectorAll(".grid-item").forEach(item => {
+            const number = parseInt(item.getAttribute("data-number"));
+            if (isPathCorrect(number)) {
+                item.classList.remove("blue");  // Remove blue temporary color
+                item.classList.add("highlighted");  // Add green highlight for correct grid
+            }
+        });
+    }
+
+    // Check if the path is complete
+    function isPathComplete() {
+        return correctPaths.some(path => {
+            return path.every(step => currentPath.includes(step));
+        });
+    }
+
+    // Check if the number is part of a correct path
+    function isPathCorrect(number) {
+        return correctPaths.some(path => path.includes(number) && path.every(step => currentPath.includes(step) || step === number));
+    }
+
+    // Lock the path and mark the grids as locked
+    function lockPath() {
+        currentPath.forEach(step => {
+            lockedGrids.add(step);
+            document.querySelector(`[data-number="${step}"]`).classList.add("locked");
+        });
+
+        // Reset the current path for the next attempt
+        currentPath = [];
+        highlightCorrectPath();  // Highlight the completed correct paths
+    }
+
+    // Reset the path when an invalid step is clicked
+    function resetPath() {
+        // Reset grid colors and the current path
+        document.querySelectorAll(".grid-item").forEach(item => {
+            item.classList.remove("blue", "highlighted");
+        });
+        currentPath = [];
+    }
+</script>
+
+</body>
+</html>

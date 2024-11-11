@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinity Area</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #f0f0f0 0%, #d9d9d9 100%);
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #403a3a;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px  #007bff;
+            border: 2px solid #007bff;
+            transition: transform 0.3s ease;
+        }
+
+        /* Timer container styles */
+        .timer-container {
+            position: relative;
+            width: 210%;
+            height: 40px;
+            background-color: #333;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        /* Timer text styles */
+        #timer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        /* Progress bar styles */
+        .timer-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ffff00, #ff0000);
+            width: 100%;
+            transition: width 1s linear;
+            z-index: 1;
+        }
+
+        .container:hover {
+            transform: scale(1.02);
+        }
+
+        .gambar-geometri {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 20px;
+        }
+
+        .gambar-geometri img {
+            width: 450px;
+            height: 450px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+
+        .gambar-geometri img:hover {
+            transform: scale(1.05);
+        }
+
+        .input-geometri {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-gap: 20px;
+            margin-left: 40px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .input-group label {
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .input-group input {
+            width: 160px;
+            height: 45px;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: none;
+            background-color: #ffdd99;
+            text-align: center;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .input-group input:hover {
+            transform: translateY(-5px);
+            background-color: #fbc05d;
+        }
+
+        #periksa, #reset {
+            grid-column: span 2;
+            width: 400px;
+            height: 55px;
+            background-color: #007bff;
+            color: white;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        #periksa:hover, #reset:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .input-group input.correct {
+            background-color: #28a745; /* Hijau untuk benar */
+            color: white;
+            border: 2px solid #155724;
+            pointer-events: none; /* Menonaktifkan interaksi */
+        }
+
+        .input-group input.wrong {
+            background-color: #dc3545; /* Merah untuk salah */
+            color: white;
+            border: 2px solid #721c24;
+        }
+
+        /* Styling untuk tombol level */
+        .level-buttons {
+            grid-column: span 2;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .level-buttons button {
+            width: 195px;
+            height: 50px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .level-buttons button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #score {
+            font-size: 24px;
+            color: #fff;
+            background-color: #333;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            text-align: center;
+            width: 200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #final-screen {
+            display: none;
+            font-size: 24px;
+            background-color: #282c34;
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .final-time, .final-score {
+            font-size: 20px;
+            margin: 10px 0;
+        }
+
+        .restart-button {
+            background-color: #007bff;
+            border: none;
+            padding: 10px 20px;
+            color: white;
+            cursor: pointer;
+            border-radius: 10px;
+            font-size: 18px;
+        }
+
+        .restart-button:hover {
+            background-color: #0056b3;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Gambar di kiri -->
+        <div class="gambar-geometri">
+            <img src="monyet.png" alt="monyet" id="geometri-gambar">
+        </div>
+
+        <!-- Input dan tombol di kanan -->
+        <div class="input-geometri">
+            <div class="input-group">
+                <label for="rhombuses">Rhombuses:</label>
+                <input type="text" id="rhombuses" placeholder="Answer">
+            </div>
+            <div class="input-group">
+                <label for="trapezoids">Trapezoids:</label>
+                <input type="text" id="trapezoids" placeholder="Answer">
+            </div>
+            <div class="input-group">
+                <label for="parallelograms">Parallelograms:</label>
+                <input type="text" id="parallelograms" placeholder="Answer">
+            </div>
+            <div class="input-group">
+                <label for="triangles">Triangles:</label>
+                <input type="text" id="triangles" placeholder="Answer">
+            </div>
+            <div class="input-group">
+                <label for="squares">Squares:</label>
+                <input type="text" id="squares" placeholder="Answer">
+            </div>
+            <div class="input-group hidden" id="hexagon-group">
+                <label for="hexagons">Hexagons:</label>
+                <input type="text" id="hexagons" placeholder="Answer">
+            </div>
+
+            <button id="periksa">Check Answers</button>
+            <div class="level-buttons">
+                <button id="level1" disabled>Level 1</button>
+                <button id="level2" disabled>Level 2</button>
+            </div>
+            <button id="reset">Reset</button>
+
+            <!-- Timer -->
+            <div class="timer-container">
+                <div id="timer">10:00</div>
+                <div class="timer-bar"></div>
+            </div>
+            <div id="score">Score: 0</div>
+            <div id="final-screen">
+                <div class="final-time">Fastest Time: <span id="fastest-time"></span></div>
+                <div class="final-score">Final Score: <span id="final-score"></span></div>
+                <button class="restart-button" onclick="restartGame()">Restart Game</button>
+            </div>
+
+        </div>
+    </div>
+</body>
+
+<script>
+    const answers = {
+        level1: {
+            rhombuses: 290,
+            trapezoids: 100,
+            parallelograms: 255,
+            triangles: 171,
+            squares: 315
+        },
+        level2: {
+            rhombuses: 182,
+            trapezoids: 380,
+            parallelograms: 175,
+            triangles: 429,
+            squares: 189,
+            hexagons: 258
+        }
+    };
+
+    let currentLevel = 'level1'; // Default to Level 1
+    let levelsCompleted = { level1: false, level2: false };
+    let score = 0;
+    let fastestTime = null;
+
+    // Timer Variables
+    let timeRemaining = 600; // 10 minutes in seconds
+    let timerInterval;
+    let isTimerRunning = false;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        startTimer(); // Start timer on page load
+        updateLevelButtonColors();
+    });
+
+    document.getElementById('level1').addEventListener('click', function () {
+        if (levelsCompleted.level1) return;
+        currentLevel = 'level1';
+        document.getElementById('hexagon-group').classList.add('hidden');
+        clearInputs();
+        updateLevelButtonColors();
+    });
+
+    document.getElementById('level2').addEventListener('click', function () {
+        if (levelsCompleted.level2 || !levelsCompleted.level1) return;
+        currentLevel = 'level2';
+        document.getElementById('hexagon-group').classList.remove('hidden');
+        clearInputs();
+        updateLevelButtonColors();
+    });
+
+    document.getElementById('periksa').addEventListener('click', function () {
+        let correct = checkAllAnswers();
+
+        if (correct) {
+            levelsCompleted[currentLevel] = true;
+            setTimeout(moveToNextLevel, 1000); // 1-second delay before switching levels
+        }
+    });
+
+    function checkAllAnswers() {
+        let allCorrect = true;
+        const rhombusesInput = document.getElementById('rhombuses').value;
+        const trapezoidsInput = document.getElementById('trapezoids').value;
+        const parallelogramsInput = document.getElementById('parallelograms').value;
+        const trianglesInput = document.getElementById('triangles').value;
+        const squaresInput = document.getElementById('squares').value;
+        const hexagonsInput = currentLevel === 'level2' ? document.getElementById('hexagons').value : null;
+
+        allCorrect = checkAnswer('rhombuses', rhombusesInput) && allCorrect;
+        allCorrect = checkAnswer('trapezoids', trapezoidsInput) && allCorrect;
+        allCorrect = checkAnswer('parallelograms', parallelogramsInput) && allCorrect;
+        allCorrect = checkAnswer('triangles', trianglesInput) && allCorrect;
+        allCorrect = checkAnswer('squares', squaresInput) && allCorrect;
+
+        if (currentLevel === 'level2' && hexagonsInput !== null) {
+            allCorrect = checkAnswer('hexagons', hexagonsInput) && allCorrect;
+        }
+
+        return allCorrect;
+    }
+
+    function checkAnswer(shape, input) {
+        const correctAnswer = answers[currentLevel][shape];
+        const inputElement = document.getElementById(shape);
+        inputElement.classList.remove('correct', 'wrong');
+
+        if (input !== '') {
+            if (parseInt(input) === correctAnswer) {
+                if (!inputElement.classList.contains('correct')) {
+                    score += 200; // Add points for correct answer
+                }
+                inputElement.classList.add('correct');
+                inputElement.readOnly = true;
+                updateScoreDisplay();
+                return true;
+            } else {
+                if (!inputElement.classList.contains('wrong')) {
+                    score -= 100; // Deduct points for incorrect answer
+                }
+                inputElement.classList.add('wrong');
+                updateScoreDisplay();
+                return false;
+            }
+        }
+        return false;
+    }
+
+    function moveToNextLevel() {
+        if (currentLevel === 'level1' && levelsCompleted.level1) {
+            document.getElementById('level2').disabled = false;
+            document.getElementById('level1').disabled = true;
+            document.getElementById('level2').click();
+        } else if (currentLevel === 'level2' && levelsCompleted.level2) {
+            showFinalScreen(); // Show final screen when level 2 is complete
+        }
+        updateLevelButtonColors();
+    }
+
+    function updateScoreDisplay() {
+        document.getElementById('score').textContent = `Score: ${score}`;
+    }
+
+    function showFinalScreen() {
+        clearInterval(timerInterval); // Stop the timer
+
+        // Calculate and display final score and time
+        document.getElementById('final-score').textContent = score;
+        if (!fastestTime || timeRemaining < fastestTime) {
+            fastestTime = timeRemaining;
+        }
+        const minutes = Math.floor(fastestTime / 60);
+        const seconds = fastestTime % 60;
+        document.getElementById('fastest-time').textContent = `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+
+        document.getElementById('final-screen').style.display = 'block'; // Show final screen
+    }
+
+    function restartGame() {
+        const restartConfirm = confirm('Do you want to restart the game?');
+        if (restartConfirm) {
+            resetGame();
+        }
+    }
+
+    function resetGame() {
+        score = 0;
+        levelsCompleted = { level1: false, level2: false };
+        resetTimer();
+        updateScoreDisplay();
+        clearInputs();
+        document.getElementById('final-screen').style.display = 'none'; // Hide final screen
+        document.getElementById('level1').click(); // Restart from level 1
+    }
+
+    function clearInputs() {
+        const inputs = document.querySelectorAll('input[type="number"]');
+        inputs.forEach(input => {
+            input.value = '';
+            input.classList.remove('correct', 'wrong');
+            input.readOnly = false;
+        });
+    }
+
+    function updateLevelButtonColors() {
+        document.getElementById('level1').style.backgroundColor = levelsCompleted.level1 ? 'green' : 'gray';
+        document.getElementById('level2').style.backgroundColor = levelsCompleted.level2 ? 'green' : 'gray';
+    }
+
+    function startTimer() {
+        timerInterval = setInterval(function () {
+            if (timeRemaining > 0) {
+                timeRemaining--;
+                updateTimerDisplay();
+            } else {
+                clearInterval(timerInterval);
+                alert("Time is Over!!");
+                disableInputs(); // Disable all inputs when time is over
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const timerElement = document.getElementById('timer');
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        timerElement.textContent = `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+        document.querySelector('.timer-bar').style.width = `${(timeRemaining / 600) * 100}%`; // Update timer bar
+    }
+
+    function resetTimer() {
+        clearInterval(timerInterval);
+        timeRemaining = 600; // Reset to 10 minutes
+        updateTimerDisplay();
+        startTimer(); // Restart the timer
+    }
+
+    function disableInputs() {
+        const inputs = document.querySelectorAll('input[type="number"]');
+        inputs.forEach(input => {
+            input.readOnly = true; // Disable all input fields
+        });
+    }
+</script>
+
+</body>
+</html>

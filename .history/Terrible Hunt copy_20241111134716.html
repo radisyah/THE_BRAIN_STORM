@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Brain Storm | Terrible Hunt</title>
+    <style>
+         body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            overflow: hidden; /* Prevent scrollbars */
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9); /* Darker overlay */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999; /* Ensure overlay is on top */
+            opacity: 0;
+            animation: fadeIn 0.5s forwards; /* Fade-in animation */
+        }
+
+        .overlay.hidden {
+            display: none; /* Add this to hide overlay */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .title {
+            color: #00ccff; /* Light blue for the title */
+            font-size: 3em;
+            text-align: center;
+            animation: glowing 1.5s infinite alternate;
+            text-shadow: 0 0 20px #00ccff, 0 0 30px #00ccff; /* Glowing effect */
+        }
+
+        @keyframes glowing {
+            0% { text-shadow: 0 0 20px #00ccff, 0 0 30px #00ccff; }
+            100% { text-shadow: 0 0 10px #00ccff, 0 0 20px #00ccff; }
+        }
+
+        .start-button {
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            color: white;
+            background-color: #00ccff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s; /* Transition effects */
+            box-shadow: 0 4px 10px rgba(0, 204, 255, 0.5); /* Box shadow for depth */
+        }
+
+        .start-button:hover {
+            background-color: #0099cc; /* Darker shade on hover */
+            transform: scale(1.05); /* Slight scale effect */
+        }
+
+        #main-content {
+            display: none; /* Hide main content initially */
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background-color: #2b2b2b; /* Dark background for contrast */
+            border-radius: 20px;
+            box-shadow: 0 8px 20px  #007bff;
+            padding: 30px;
+            border: 2px solid #007bff;
+            transition: transform 0.3s ease-in-out;
+        }
+
+          /* Timer container styles */
+          .timer-container {
+            position: relative;
+            width: 100%;
+            height: 40px;
+            background-color: #333;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        /* Timer text styles */
+        #timer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        /* Progress bar styles */
+        .timer-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ffff00, #ff0000);
+            width: 100%;
+            transition: width 1s linear;
+            z-index: 1;
+        }
+
+        .container:hover {
+            transform: scale(1.02); /* Slight scale effect when hovering over the container */
+        }
+
+        /* Hexagonal grid container */
+        .hex-grid {
+            display: grid;
+            grid-template-columns: repeat(11, 46px);
+            grid-gap: 15px;
+            justify-content: center;
+            margin-right: 30px;
+          
+        }
+
+        .hex {
+            box-shadow: 0 8px 20px  #007bff;
+            position: relative;
+            width: 60px;
+            height: 69.28px;
+            background: #ffdd99;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: black;
+            clip-path: polygon(
+                50% 0%, 
+                100% 25%, 
+                100% 75%, 
+                50% 100%, 
+                0% 75%, 
+                0% 25%
+            );
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+            margin: -10px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add shadow to hexagons */
+        }
+
+        /* Hover effect with larger shadow and movement */
+        .hex:hover {
+            background-color: #ffd166;
+            transform: translateY(-10px) scale(1.05); /* Larger transform effect */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+        }
+
+        /* Mengatur gaya ketika benar atau salah */
+        .hex.correct {
+            background-color: #28a745; /* Green for correct */
+            color: white;
+            box-shadow: 0 6px 12px rgba(0, 255, 0, 0.3); /* Green shadow */
+        }
+
+        .hex.wrong {
+            background-color: #dc3545; /* Red for wrong */
+            color: white;
+            box-shadow: 0 6px 12px rgba(255, 0, 0, 0.3); /* Red shadow */
+        }
+
+        button {
+            margin: 5px 5px;
+            padding: 10px 20px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Tombol dan styling */
+        .button-container {
+            display: flex;
+            flex-direction: column; /* Align buttons vertically */
+            padding: 10px; /* Added padding */
+            padding: 10px; /* Added padding */
+            background-color: #ffdd99; /* Background color for buttons layout */
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for effect */
+             border: 1px solid #000;
+        }
+
+        .level-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px; /* More rounded buttons */
+            padding: 12px;
+            margin: 8px 0;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: background-color 0.3s, box-shadow 0.3s, transform 0.3s;
+            width: 220px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Soft shadow for buttons */
+        }
+
+        .level-button:hover {
+            background-color: #0056b3;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+            transform: translateY(-3px); /* Slight movement on hover */
+        }
+        #score-display {
+            font-size: 24px; /* Larger font size for better visibility */
+            margin-top: 10px; /* Spacing from the elements above */
+            padding: 10px; /* Padding around the score display */
+            background-color: #28a745; /* Green background for positive feedback */
+            color: white; /* White text color */
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+            transition: transform 0.3s; /* Add a transition for the hover effect */
+            text-align: center; /* Center align text */
+        }
+
+        #score-display:hover {
+            transform: scale(1.05); /* Slightly scale up on hover */
+            cursor: pointer; /* Change cursor to pointer on hover */
+        }
+
+        .modal-content h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .modal-content p {
+            font-size: 20px;
+            margin: 10px 0;
+        }
+
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            font-size: 24px;
+            color: #333; /* Text color */
+        }
+
+        .close {
+            margin-top: 20px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .close:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+
+        video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            object-fit: contain;
+            background-color: #000;
+        }
+
+        #score-display {
+            font-size: 24px; /* Larger font size for better visibility */
+            margin-top: 10px; /* Spacing from the elements above */
+            padding: 10px; /* Padding around the score display */
+            background-color: #28a745; /* Green background for positive feedback */
+            color: white; /* White text color */
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+            transition: transform 0.3s; /* Add a transition for the hover effect */
+            text-align: center; /* Center align text */
+        }
+
+        #score-display:hover {
+            transform: scale(1.05); /* Slightly scale up on hover */
+            cursor: pointer; /* Change cursor to pointer on hover */
+        }
+
+
+    </style>
+
+</head>
+
+<body>
+    <div class="overlay" id="overlay">
+        <div class="title">THE BRAIN STORM</div>
+        <div class="title">MISSION 4: TERRIBLE HUNT</div>
+        <button class="start-button" id="startButton">PLAY NOW</button>
+    </div>
+
+    <!-- Video element -->
+    <video id="introVideo" controls style="display: none;">
+        <source src="MISSION 4.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <div id="main-content">
+        <div class="container">
+            <div class="hex-grid" id="hex-grid">
+                <!-- Grid hexagonal will be dynamically populated -->
+            </div>
+
+            <div class="button-container">
+                <button class="level-button" id="level1-btn" onclick="selectLevel(1)" disabled>Round 1</button>
+                <button class="level-button" id="level2-btn" onclick="selectLevel(2)" disabled>Round 2</button>
+                <br>
+                <div class="timer-container">
+                    <div id="timer">05:00</div>
+                    <div class="timer-bar"></div>
+                </div>
+                <div id="score-display" style="font-size: 20px; margin-top: 10px;">Score: 0</div>
+
+            </div>
+
+        </div>
+    </div>
+
+     <!-- Final Score Modal -->
+     <div class="modal" id="final-score-modal">
+        <div class="modal-content">
+            <h2>Congratulations!</h2>
+            <p id="final-score-display">Your Final Score: 0</p>
+            <p id="fastest-time-display">Fastest Time: 10:00</p>
+        </div>
+    </div>
+    
+</body>
+
+<script>
+    document.getElementById('startButton').addEventListener('click', function () {
+        // Hide the overlay
+        document.getElementById('overlay').style.display = 'none';       
+        document.getElementById('main-content').style.display = 'block'; // Show main content
+        selectLevel(1);
+    });
+</script>
+
+<script>
+    let correctNumbers = [];
+    let wrongAttempts = 0; // Ini bisa tetap ada jika diperlukan di tempat lain
+    let currentLevel = 1;
+    let isGridDisabled = false;
+    let isTimerRunning = false;
+    let timerInterval;
+    let score = 0; // Initialize score variable
+    const timeLimit = 300;
+    let timeRemaining = timeLimit;
+    const processedNumbers = new Set(); // Set to track processed numbers
+
+    const timerDisplay = document.getElementById('timer');
+    const timerBar = document.querySelector('.timer-bar');
+    const scoreDisplay = document.getElementById('score-display'); // Get the score display element
+
+    // Function to update the score display
+    function updateScoreDisplay() {
+        scoreDisplay.textContent = `Score: ${score}`;
+    }
+
+    function selectLevel(level) {
+        currentLevel = level;
+        correctNumbers = generateCorrectNumbers(level);
+        generateHexGrid();
+        wrongAttempts = 0;
+        isGridDisabled = false;
+        
+        // Set button styles and disable/enable accordingly
+        document.getElementById('level1-btn').disabled = level !== 1;
+        document.getElementById('level2-btn').disabled = level !== 2;
+        updateButtonStyles();
+        updateScoreDisplay(); // Reset the displayed score
+
+        // Start the timer if it hasn’t started yet
+        if (!isTimerRunning) {
+            startTimer();
+        }
+    }
+
+    function updateButtonStyles() {
+        document.getElementById('level1-btn').style.backgroundColor = currentLevel === 1 ? "#0056b3" : "#007bff";
+        document.getElementById('level2-btn').style.backgroundColor = currentLevel === 2 ? "#0056b3" : "#007bff";
+    }
+
+    function startTimer() {
+        if (isTimerRunning) return;
+        isTimerRunning = true;
+
+        timerInterval = setInterval(() => {
+            timeRemaining--;
+
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            timerDisplay.textContent = `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+
+            const percentage = (timeRemaining / timeLimit) * 100;
+            timerBar.style.width = `${percentage}%`;
+            timerBar.style.background = percentage <= 33 ? "#ff0000" : percentage <= 66 ? "#ffff00" : "#00ff00";
+
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                timerDisplay.textContent = "Time is Over";
+                disableGridInteractions();
+                showGameOverModalTimeOver();
+            }
+        }, 1000);
+    }
+
+    function disableGridInteractions() {
+        isGridDisabled = true;
+        const hexGrid = document.getElementById('hex-grid');
+        Array.from(hexGrid.children).forEach(hexItem => {
+            hexItem.style.pointerEvents = 'none';
+        });
+    }
+
+    function generateCorrectNumbers(level) {
+        return level === 1 ? getPrimes(1, 121) : getPerfectSquares(122, 242);
+    }
+
+    function playCorrectSound() {
+        const correctSound = new Audio('correct_answer.mp3');
+        correctSound.play();
+    }
+
+    function playWrongSound() {
+        const wrongSound = new Audio('wrong_answer.mp3');
+        wrongSound.play();
+    }
+
+    function generateHexGrid() {
+    const hexGrid = document.getElementById('hex-grid');
+    hexGrid.innerHTML = ''; // Clear the grid
+
+    let number = (currentLevel === 1) ? 121 : (currentLevel - 1) * 121 + 1; // Set the starting number based on level
+    const totalHex = 121;
+
+    for (let i = 0; i < totalHex; i++) {
+        const hex = document.createElement('div');
+        hex.classList.add('hex');
+        hex.textContent = number;
+
+        (function(num) {
+            hex.addEventListener('click', function() {
+                if (!isGridDisabled && !processedNumbers.has(num)) { // Ensure grid is not disabled and not yet processed
+                    processedNumbers.add(num); // Mark number as processed
+
+                    if (correctNumbers.includes(num)) {
+                        hex.classList.add('correct'); // Mark as correct
+                        playCorrectSound(); // Play correct sound
+                        score += 250; // Add score for correct answer
+                        
+                        if (currentLevel === 1) {
+                            checkAllPrimesGuessed();
+                        } else if (currentLevel === 2) {
+                            checkAllPerfectSquaresGuessed();
+                        }
+                    } else {
+                        hex.classList.add('wrong'); // Mark as wrong
+                        playWrongSound(); // Play wrong sound
+                        score -= 125; // Deduct score for wrong answer
+                    }
+
+                    updateScoreDisplay(); // Update the displayed score
+                }
+            });
+        })(number);
+
+        hexGrid.appendChild(hex);
+        number = (currentLevel === 1) ? number - 1 : number + 1;
+    }
+}
+
+function showGameOverModalSuccess() {
+        clearInterval(timerInterval);
+        const modal = document.getElementById('final-score-modal');
+        
+        // Display the modal
+        modal.style.display = 'flex';
+
+        // Update the modal title to "Congratulations!"
+        document.querySelector('.modal-content h2').textContent = 'Congratulations!';
+
+        // Update the final score and remaining time display
+        document.getElementById('final-score-display').textContent = `Your Final Score: ${score}`;
+        document.getElementById('fastest-time-display').textContent = `Your Remaining Time: ${formatTime(timeRemaining)}`;
+
+        // Add a "Next Mission" button to the modal if it doesn't already exist
+        if (!document.getElementById('next-mission-btn')) {
+            const nextMissionBtn = document.createElement('button');
+            nextMissionBtn.id = 'next-mission-btn';
+            nextMissionBtn.textContent = 'Next Mission';
+            nextMissionBtn.classList.add('next-mission');
+            nextMissionBtn.onclick = goToNextMission;
+            
+            // Append the button to the modal content
+            document.querySelector('.modal-content').appendChild(nextMissionBtn);
+        }
+    }
+    function showGameOverModalTimeOver() {
+        clearInterval(timerInterval);
+        const modal = document.getElementById('final-score-modal');
+        
+        // Display the modal
+        modal.style.display = 'flex';
+
+        // Update the modal title to "Congratulations!"
+        document.querySelector('.modal-content h2').textContent = 'Congratulations!';
+
+        // Update the final score and remaining time display
+        document.getElementById('final-score-display').textContent = `Your Final Score: ${score}`;
+        document.getElementById('fastest-time-display').textContent = `Your Remaining Time: ${formatTime(timeRemaining)}`;
+
+        // Add a "Next Mission" button to the modal if it doesn't already exist
+        if (!document.getElementById('next-mission-btn')) {
+            const nextMissionBtn = document.createElement('button');
+            nextMissionBtn.id = 'next-mission-btn';
+            nextMissionBtn.textContent = 'Next Mission';
+            nextMissionBtn.classList.add('next-mission');
+            nextMissionBtn.onclick = goToNextMission;
+            
+            // Append the button to the modal content
+            document.querySelector('.modal-content').appendChild(nextMissionBtn);
+        }
+    }
+
+    // Redirect function
+    function goToNextMission() {
+        window.location.href = 'Broken Link.html';
+    }
+
+    function formatTime(time) {
+        const minutes = Math.floor(time / 60);
+        const seconds = time % 60;
+        return `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+    }
+
+    function restartGame() {
+        clearInterval(timerInterval); // Clear any running timer
+        location.reload(); // Reload the page to restart the game
+    }
+
+    function checkAllPerfectSquaresGuessed() {
+        const allCorrectHexes = document.querySelectorAll('.hex.correct');
+        if (allCorrectHexes.length === correctNumbers.length) {
+            setTimeout(() => {
+                clearInterval(timerInterval); // Hentikan timer
+                showGameOverModalSuccess(); // Tampilkan modal skor akhir
+            }, 1000);
+        }
+    }
+
+    function checkAllPrimesGuessed() {
+        const allCorrectHexes = document.querySelectorAll('.hex.correct');
+        if (allCorrectHexes.length === correctNumbers.length) {
+            setTimeout(() => {
+                selectLevel(2); // Move to Level 2 after 1-second delay
+            }, 1000);
+        }
+    }
+
+    // Hapus resetHexColors dan semua panggilannya, termasuk kondisi reset pada wrongAttempts.
+
+    function getPrimes(start, end) {
+        const primes = [];
+        for (let i = start; i <= end; i++) {
+            if (isPrime(i)) primes.push(i);
+        }
+        return primes;
+    }
+
+    function isPrime(num) {
+        if (num <= 1) return false;
+        for (let i = 2; i <= Math.sqrt(num); i++) {
+            if (num % i === 0) return false;
+        }
+        return true;
+    }
+
+    function getPerfectSquares(start, end) {
+        const squares = [];
+        for (let i = Math.ceil(Math.sqrt(start)); i <= Math.floor(Math.sqrt(end)); i++) {
+            squares.push(i * i);
+        }
+        return squares;
+    }
+
+    
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,34 @@
+function startTimer() {
+    if (isTimerRunning) return;
+    isTimerRunning = true;
+
+    timerInterval = setInterval(() => {
+        timeRemaining--;
+
+        // Format menit dan detik
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        timerDisplay.textContent = `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+
+        // Perbarui lebar progress bar
+        const percentage = (timeRemaining / timeLimit) * 100;
+        timerBar.style.width = `${percentage}%`;
+
+        // Ubah warna progress bar
+        if (percentage <= 33) {
+            timerBar.style.background = "#ff0000";
+        } else if (percentage <= 66) {
+            timerBar.style.background = "#ffff00";
+        } else {
+            timerBar.style.background = "#00ff00";
+        }
+
+        // Ketika waktu habis
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            timerDisplay.textContent = "Time is Over";
+            disableGridInteractions(); // Fungsi untuk mengunci input
+        }
+}, 1000);
+}

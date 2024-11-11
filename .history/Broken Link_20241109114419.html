@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Grid Connect Game</title>
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(5, 120px); /* Grid 5 kolom */
+            grid-gap: 10px;
+            justify-content: center;
+            margin-top: 50px;
+        }
+
+        .grid-item {
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ccc;
+            position: relative;
+            background-color: white;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .highlighted {
+            background-color: lightgreen; /* Hijau ketika benar */
+        }
+
+        .blue {
+            background-color: lightblue; /* Biru untuk jalur sementara */
+        }
+
+        .locked {
+            background-color: lightgreen; /* Grid yang sudah benar */
+            cursor: not-allowed; /* Tidak dapat dipilih lagi */
+        }
+
+        .selected {
+            background-color: lightblue;
+        }
+
+        .no-number {
+            background-color: lightgray; /* Grid yang tidak memiliki angka */
+            cursor: pointer; /* Menjadikan grid tetap bisa diklik */
+        }
+    </style>
+</head>
+<body>
+
+<div class="grid-container" id="gridContainer">
+    <!-- Grid will be inserted dynamically here -->
+</div>
+
+<script>
+    // Data untuk grid dan jalur dinamis
+    const gridData = [
+        { number: 1, hasNumber: true },
+        { number: 2, hasNumber: true },
+        { number: 3, hasNumber: false },  // Grid tanpa angka
+        { number: 4, hasNumber: true },
+        { number: 5, hasNumber: true },
+        { number: 6, hasNumber: false },  // Grid tanpa angka
+        { number: 7, hasNumber: true },
+        { number: 8, hasNumber: true },
+        { number: 9, hasNumber: false },  // Grid tanpa angka
+        { number: 10, hasNumber: false }  // Grid tanpa angka
+    ];  // Array objek untuk grid dengan properti `hasNumber`
+    
+    const correctPaths = [
+        [1, 6, 7],    // Jalur 1 -> 6 -> 7
+        [2, 3, 8],    // Jalur 2 -> 3 -> 8
+        [4, 9, 10, 5] // Jalur 4 -> 9 -> 10 -> 5
+    ];
+
+    let currentPath = []; // Menyimpan jalur yang sedang dipilih
+    let lockedGrids = new Set(); // Menyimpan grid yang sudah benar dan terkunci
+
+    // Fungsi untuk membuat grid secara dinamis
+    function generateGrid() {
+        const container = document.getElementById('gridContainer');
+        gridData.forEach(item => {
+            const gridItem = document.createElement('div');
+            gridItem.classList.add('grid-item');
+            gridItem.setAttribute('data-number', item.number);
+
+            // Jika grid memiliki angka, tampilkan angka tersebut
+            if (item.hasNumber) {
+                gridItem.textContent = item.number;
+            } else {
+                gridItem.classList.add('no-number');  // Grid tanpa angka
+                gridItem.textContent = '';  // Tidak ada angka yang ditampilkan
+            }
+
+            container.appendChild(gridItem);
+
+            // Menambahkan event listener untuk setiap grid item
+            gridItem.addEventListener('click', (event) => {
+                handleGridClick(event, item.number);
+            });
+        });
+    }
+
+    function handleGridClick(event, clickedNumber) {
+    // Jika grid sudah terkunci, jangan izinkan klik
+    if (lockedGrids.has(clickedNumber)) {
+        return;
+    }
+
+    // Jika tidak ada urutan yang dipilih, buat jalur baru
+    if (currentPath.length === 0) {
+        currentPath.push(clickedNumber);
+        event.currentTarget.classList.add("blue");
+        return;
+    }
+
+    // Periksa apakah grid yang dipilih sesuai dengan urutan
+    if (isValidStep(clickedNumber)) {
+        currentPath.push(clickedNumber);
+        event.currentTarget.classList.add("blue");
+
+        // Menandai grid yang sudah terhubung
+        highlightCurrentPath();
+
+        // Jika urutan sudah lengkap, semua grid menjadi hijau dan terkunci
+        if (isPathComplete()) {
+            lockPath();
+        }
+    } else {
+        // Jika urutannya salah, reset
+        resetGrid();
+    }
+}
+
+
+    function isValidStep(clickedNumber) {
+        // Memeriksa apakah langkah yang dipilih valid (sesuai dengan jalur)
+        const lastStep = currentPath[currentPath.length - 1];
+        return correctPaths.some(path => {
+            const indexLastStep = path.indexOf(lastStep);
+            return indexLastStep !== -1 && path[indexLastStep + 1] === clickedNumber;
+        }) || correctPaths.some(path => {
+            const indexLastStep = path.indexOf(lastStep);
+            return indexLastStep !== -1 && path[indexLastStep - 1] === clickedNumber;
+        });
+    }
+
+    function highlightCurrentPath() {
+        // Menandai jalur yang dipilih dengan warna biru
+        document.querySelectorAll(".grid-item").forEach(item => {
+            const number = parseInt(item.getAttribute("data-number"));
+            if (currentPath.includes(number)) {
+                item.classList.add("blue");
+            } else {
+                item.classList.remove("blue");
+            }
+        });
+    }
+
+    function isPathComplete() {
+        // Memeriksa apakah urutan yang benar telah dipilih (baik langsung atau terbalik)
+        return correctPaths.some(path => {
+            return path.every(step => currentPath.includes(step)) || path.reverse().every(step => currentPath.includes(step));
+        });
+    }
+
+    function lockPath() {
+        // Mengunci grid yang sudah benar dan tidak bisa dipilih lagi
+        currentPath.forEach(step => {
+            lockedGrids.add(step);
+            document.querySelector(`[data-number="${step}"]`).classList.add("locked");
+        });
+
+        // Reset jalur setelah terkunci, dan lanjutkan dengan jalur berikutnya
+        currentPath = [];
+    }
+
+    function resetGrid() {
+        // Reset semua grid dan urutan
+        document.querySelectorAll(".grid-item").forEach(item => {
+            item.classList.remove("blue", "highlighted", "locked");
+        });
+        currentPath = [];
+    }
+
+    // Generate grid on page load
+    generateGrid();
+</script>
+
+</body>
+</html>

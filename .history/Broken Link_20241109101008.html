@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Drag and Connect</title>
+    <style>
+        .grid-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .grid-item {
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ccc;
+            position: relative;
+            background-color: white;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .circle {
+            width: 60px;
+            height: 60px;
+            background-color: lightgray;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .highlighted {
+            background-color: lightgreen;
+        }
+
+        .error {
+            background-color: lightcoral;
+        }
+
+        .disabled {
+            background-color: lightgray;
+            cursor: not-allowed;
+        }
+
+        .empty {
+            background-color: transparent;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="grid-container">
+    <!-- Grid with numbers (active) -->
+    <div class="grid-item" data-number="1"><div class="circle">1</div></div>
+    <div class="grid-item empty" data-number=""><div class="circle"></div></div>
+    <div class="grid-item empty" data-number=""><div class="circle"></div></div>
+    <div class="grid-item empty" data-number=""><div class="circle"></div></div>
+    <div class="grid-item" data-number="5"><div class="circle">5</div></div>
+    <div class="grid-item empty" data-number=""><div class="circle"></div></div>
+    <div class="grid-item" data-number="7"><div class="circle">7</div></div>
+</div>
+
+<script>
+    let isDragging = false;
+    let startNumber = null;
+
+    const correctOrder = [1, 5, 7]; // Urutan yang benar dari grid
+    let currentOrder = [];
+
+    // Menambahkan event listener ke setiap grid-item
+    document.querySelectorAll(".grid-item").forEach(item => {
+        // Hanya aktifkan drag jika grid-item memiliki angka
+        if (item.getAttribute("data-number")) {
+            item.addEventListener("mousedown", (event) => {
+                isDragging = true;
+                startNumber = parseInt(event.currentTarget.getAttribute("data-number"));
+                event.currentTarget.classList.add("highlighted");
+            });
+
+            item.addEventListener("mouseup", (event) => {
+                isDragging = false;
+                const endNumber = parseInt(event.currentTarget.getAttribute("data-number"));
+                currentOrder.push(endNumber);
+                highlightInBetween(startNumber, endNumber);
+                validateOrder();
+                startNumber = null;
+            });
+
+            item.addEventListener("mousemove", (event) => {
+                if (isDragging) {
+                    const currentNumber = parseInt(event.currentTarget.getAttribute("data-number"));
+                    if (currentNumber >= startNumber) {
+                        highlightInBetween(startNumber, currentNumber);
+                    }
+                }
+            });
+        } else {
+            // Grid kosong (empty) hanya berfungsi sebagai jalur
+            item.classList.add("empty");
+        }
+    });
+
+    function highlightInBetween(start, end) {
+        document.querySelectorAll(".grid-item").forEach(item => {
+            const number = parseInt(item.getAttribute("data-number"));
+            item.classList.remove("highlighted", "error");
+            if (number >= start && number <= end) {
+                item.classList.add("highlighted");
+            }
+        });
+    }
+
+    function validateOrder() {
+        document.querySelectorAll(".grid-item").forEach(item => {
+            const number = parseInt(item.getAttribute("data-number"));
+            if (correctOrder.includes(number)) {
+                if (currentOrder.includes(number)) {
+                    item.classList.add("highlighted");
+                } else {
+                    item.classList.remove("highlighted");
+                }
+            }
+        });
+
+        // Cek apakah urutannya benar
+        if (currentOrder.length === correctOrder.length) {
+            if (JSON.stringify(currentOrder) === JSON.stringify(correctOrder)) {
+                highlightCorrect();
+            } else {
+                highlightError();
+            }
+        }
+    }
+
+    function highlightCorrect() {
+        document.querySelectorAll(".grid-item").forEach(item => {
+            const number = parseInt(item.getAttribute("data-number"));
+            if (correctOrder.includes(number)) {
+                item.classList.add("highlighted");
+            } else {
+                item.classList.remove("highlighted");
+            }
+        });
+    }
+
+    function highlightError() {
+        document.querySelectorAll(".grid-item").forEach(item => {
+            const number = parseInt(item.getAttribute("data-number"));
+            if (!currentOrder.includes(number)) {
+                item.classList.add("error");
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Grid</title>
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(5, 120px); /* 5 columns */
+            grid-gap: 10px;
+            justify-content: center;
+            margin-top: 50px;
+        }
+
+        .grid-item {
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ccc;
+            position: relative;
+            background-color: white;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .highlighted {
+            background-color: lightgreen;
+        }
+
+        .locked {
+            background-color: lightgreen;
+            cursor: not-allowed;
+        }
+
+        .blue {
+            background-color: lightblue;
+        }
+    </style>
+</head>
+<body>
+
+<div class="grid-container" id="gridContainer">
+    <!-- Grid items will be dynamically generated here -->
+</div>
+
+<!-- Input to dynamically configure grid items -->
+<div>
+    <h3>Set Grid Items</h3>
+    <label for="gridValues">Enter Grid Values (comma separated, e.g., "1, 2, 3, 4, 5"):</label>
+    <input type="text" id="gridValues" placeholder="1, 2, 3, 4, 5" />
+    <button onclick="generateGrid()">Generate Grid</button>
+</div>
+
+<script>
+// This array will hold the dynamically configured grid values
+let gridValues = [];
+
+// Function to generate the grid based on the dynamic input
+function generateGrid() {
+    const gridContainer = document.getElementById('gridContainer');
+    gridContainer.innerHTML = ''; // Clear the previous grid
+    const inputValues = document.getElementById('gridValues').value.split(',').map(val => val.trim());
+
+    gridValues = inputValues.map((val, index) => {
+        return { 
+            dataNumber: index + 1, // Use index for the data-number
+            value: val 
+        };
+    });
+
+    // Create grid items based on the dynamic values
+    gridValues.forEach(item => {
+        const gridItem = document.createElement('div');
+        gridItem.classList.add('grid-item');
+        gridItem.setAttribute('data-number', item.dataNumber);
+        gridItem.textContent = item.value;
+        gridContainer.appendChild(gridItem);
+    });
+}
+
+// Initially generate the grid with some default values (can be empty or predefined)
+generateGrid();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Brainstorm | Infinity Area</title>
+    <style>
+       body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            overflow: hidden; /* Prevent scroll when overlay is active */
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9); /* Darker overlay */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999; /* Ensure overlay is on top */
+            opacity: 0;
+            animation: fadeIn 0.5s forwards; /* Fade-in animation */
+        }
+
+        .overlay.hidden {
+            display: none; /* Add this to hide overlay */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .title {
+            color: #00ccff; /* Light blue for the title */
+            font-size: 3em;
+            text-align: center;
+            animation: glowing 1.5s infinite alternate;
+            text-shadow: 0 0 20px #00ccff, 0 0 30px #00ccff; /* Glowing effect */
+        }
+
+        @keyframes glowing {
+            0% { text-shadow: 0 0 20px #00ccff, 0 0 30px #00ccff; }
+            100% { text-shadow: 0 0 10px #00ccff, 0 0 20px #00ccff; }
+        }
+
+        .start-button {
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            color: white;
+            background-color: #00ccff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s; /* Transition effects */
+            box-shadow: 0 4px 10px rgba(0, 204, 255, 0.5); /* Box shadow for depth */
+        }
+
+        .start-button:hover {
+            background-color: #0099cc; /* Darker shade on hover */
+            transform: scale(1.05); /* Slight scale effect */
+        }
+
+        #main-content {
+            display: none; /* Hide main content initially */
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #403a3a;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px  #007bff;
+            border: 2px solid #007bff;
+            transition: transform 0.3s ease;
+        }
+
+        /* Timer container styles */
+        .timer-container {
+            position: relative;
+            width: 210%;
+            height: 40px;
+            background-color: #333;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        /* Timer text styles */
+        #timer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        /* Progress bar styles */
+        .timer-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ffff00, #ff0000);
+            width: 100%;
+            transition: width 1s linear;
+            z-index: 1;
+        }
+
+        .container:hover {
+            transform: scale(1.02);
+        }
+
+        .gambar-geometri {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 20px;
+        }
+
+        .gambar-geometri img {
+            width: 450px;
+            height: 450px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+
+        .gambar-geometri img:hover {
+            transform: scale(1.05);
+        }
+
+        .input-geometri {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-gap: 20px;
+            margin-left: 40px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .input-group label {
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .input-group input {
+            width: 160px;
+            height: 45px;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: none;
+            background-color: #ffdd99;
+            text-align: center;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .input-group input:hover {
+            transform: translateY(-5px);
+            background-color: #fbc05d;
+        }
+
+        #periksa, #reset {
+            grid-column: span 2;
+            width: 400px;
+            height: 55px;
+            background-color: #007bff;
+            color: white;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        #periksa:hover, #reset:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .input-group input.correct {
+            background-color: #28a745; /* Hijau untuk benar */
+            color: white;
+            border: 2px solid #155724;
+            pointer-events: none; /* Menonaktifkan interaksi */
+        }
+
+        .input-group input.wrong {
+            background-color: #dc3545; /* Merah untuk salah */
+            color: white;
+            border: 2px solid #721c24;
+        }
+
+        /* Styling untuk tombol level */
+        .level-buttons {
+            grid-column: span 2;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .level-buttons button {
+            width: 195px;
+            height: 50px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .level-buttons button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+   
+        #score-display {
+            width: 195%;
+            font-size: 24px; /* Larger font size for better visibility */
+            margin-top: 10px; /* Spacing from the elements above */
+            padding: 10px; /* Padding around the score display */
+            background-color: #28a745; /* Green background for positive feedback */
+            color: white; /* White text color */
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+            transition: transform 0.3s; /* Add a transition for the hover effect */
+            text-align: center; /* Center align text */
+        }
+
+        #score-display:hover {
+            transform: scale(1.05); /* Slightly scale up on hover */
+            cursor: pointer; /* Change cursor to pointer on hover */
+        }
+
+        .modal-content h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .modal-content p {
+            font-size: 20px;
+            margin: 10px 0;
+        }
+
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            font-size: 24px;
+            color: #333; /* Text color */
+        }
+
+        .close {
+            margin-top: 20px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .close:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="overlay">
+        <div class="title">THE BRAINSTORM</div>
+        <div class="title">MISSION 3: INFINITY AREA</div>
+        <button class="start-button" id="startButton">PLAY NOW</button>
+    </div>
+
+    <!-- Video element -->
+    <video id="introVideo" width="1280" height="720" controls style="display: none;">
+        <source src="opening.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <div id="main-content">
+        <div class="container">
+            <!-- Gambar di kiri -->
+            <div class="gambar-geometri">
+                <img src="monyet.png" alt="monyet" id="geometri-gambar">
+            </div>
+
+            <!-- Input dan tombol di kanan -->
+            <div class="input-geometri">
+                    <!-- Timer -->
+            <div class="timer-container">
+                <div id="timer">10:00</div>
+                <div class="timer-bar"></div>
+            </div>
+            <br>
+            <div class="input-group">
+                <label for="rhombuses">Rhombuses:</label>
+                <input type="text" id="rhombuses" placeholder="Answer">
+            </div>
+            <div class="input-group">
+                <label for="trapezoids">Trapezoids:</label>
+                <input type="text" id="trapezoids" placeholder="Answer">
+            </div>
+            <div class="input-group">
+                <label for="parallelograms">Parallelograms:</label>
+                <input type="text" id="parallelograms" placeholder="Answer">
+            </div>
+            <div class="input-group">
+                <label for="triangles">Triangles:</label>
+                <input type="text" id="triangles" placeholder="Answer">
+            </div>
+            <div class="input-group">
+                <label for="squares">Squares:</label>
+                <input type="text" id="squares" placeholder="Answer">
+            </div>
+            <div class="input-group hidden" id="hexagon-group">
+                <label for="hexagons">Hexagons:</label>
+                <input type="text" id="hexagons" placeholder="Answer">
+            </div>
+
+            <!-- <button id="periksa">Check Answers</button> -->
+
+            <div  id="periksa" class="level-buttons">
+                <button id="level1" disabled>Round 1</button>
+                <button id="level2" disabled>Round 2</button>
+            </div>
+            <!-- <div id="score-display" style="font-size: 20px; margin-top: 10px;">Score: 0</div> -->
+
+            <!-- <button id="reset">Reset</button> -->
+
+            <!-- Final Score Modal -->
+            <div class="modal" id="final-score-modal">
+                <div class="modal-content">
+                    <h2>Congratulations!</h2>
+                    <!-- <p id="final-score-display">Your Final Score: 0</p> -->
+                    <p id="fastest-time-display">Fastest Time: 10:00</p>
+                    <button class="close" onclick="restartGame()">Restart Game</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('startButton').addEventListener('click', function () {
+            // Hide the overlay
+            document.getElementById('overlay').style.display = 'none';
+
+            // Show the video
+            var video = document.getElementById('introVideo');
+            video.style.display = 'block'; // Display the video
+            video.play(); // Start playing the video
+
+            // When the video ends, show the main content
+            video.onended = function() {
+                video.style.display = 'none'; // Hide the video
+                document.getElementById('main-content').style.display = 'block'; // Show main content
+                hexagonGroup.classList.add('hidden');
+                startTimer(); // Mulai timer saat halaman dimuat
+                updateLevelButtonColors();
+                addInputListeners(); // Tambahkan event listener pada setiap input
+            };
+        });
+    </script>
+
+    <script>
+        const gambarGeometri = document.getElementById('geometri-gambar');
+        const level1Button = document.getElementById('level1');
+        const level2Button = document.getElementById('level2');
+        // const resetButton = document.getElementById('reset');
+        const periksaButton = document.getElementById('periksa');
+        const hexagonGroup = document.getElementById('hexagon-group');
+    
+        const answers = {
+            level1: {
+                rhombuses: 290,
+                trapezoids: 100,
+                parallelograms: 255,
+                triangles: 171,
+                squares: 315
+            },
+            level2: {
+                rhombuses: 182,
+                trapezoids: 380,
+                parallelograms: 175,
+                triangles: 429,
+                squares: 189,
+                hexagons: 258
+            }
+        };
+    
+        let currentLevel = 'level1';
+        let levelsCompleted = { level1: false, level2: false };
+    
+        // Timer Variables
+        let timeRemaining = 600; // 10 minutes in seconds
+        let timerInterval;
+        let isTimerRunning = false;
+    
+
+        function addInputListeners() {
+            const inputs = document.querySelectorAll('.input-group input');
+            inputs.forEach(input => {
+                input.addEventListener('input', function () {
+                    checkAnswer(input.id, input.value);
+                    if (checkAllAnswers()) {
+                        levelsCompleted[currentLevel] = true;
+                        setTimeout(moveToNextLevel, 1000);
+                    }
+                });
+            });
+        }
+    
+        level1Button.addEventListener('click', function () {
+            if (levelsCompleted.level1) return;
+            gambarGeometri.src = 'monyet.png';
+            gambarGeometri.alt = 'monyet';
+            currentLevel = 'level1';
+            hexagonGroup.classList.add('hidden');
+            clearInputs();
+            updateLevelButtonColors();
+        });
+    
+        level2Button.addEventListener('click', function () {
+            if (levelsCompleted.level2 || !levelsCompleted.level1) return;
+            gambarGeometri.src = 'bus.png';
+            gambarGeometri.alt = 'bus';
+            currentLevel = 'level2';
+            hexagonGroup.classList.remove('hidden');
+            clearInputs();
+            updateLevelButtonColors();
+        });
+    
+       // Load sound effects
+        const correctSound = new Audio('correct_answer.mp3');
+        const wrongSound = new Audio('wrong_answer.mp3');
+
+        // Fungsi untuk memeriksa jawaban dengan validasi panjang input
+        function checkAnswer(shape, input) {
+            const correctAnswer = answers[currentLevel][shape].toString(); // Pastikan jawaban benar dalam bentuk string
+            const inputElement = document.getElementById(shape);
+            
+            // Cek panjang input pengguna
+            if (input.length >= correctAnswer.length) {
+                if (input === correctAnswer) {
+                    // Jika jawaban benar, tambahkan kelas 'correct' dan buat input menjadi readonly
+                    if (!inputElement.classList.contains('correct')) {
+                        inputElement.classList.remove('wrong');
+                        inputElement.classList.add('correct');
+                        inputElement.readOnly = true;
+                        
+                        // Mainkan suara correct secara dinamis
+                        correctSound.cloneNode(true).play();
+                    }
+                } else {
+                    // Jika jawaban salah, tambahkan kelas 'wrong'
+                    inputElement.classList.add('wrong');
+                    
+                    // Mainkan suara wrong secara dinamis
+                    wrongSound.cloneNode(true).play();
+                }
+            } else {
+                // Jika panjang input belum mencukupi, bersihkan kelas 'wrong' dan 'correct'
+                inputElement.classList.remove('correct', 'wrong');
+            }
+        }
+
+        // Fungsi yang dipanggil setiap kali pengguna mengetik di input
+        function handleInput(event, shape) {
+            const input = event.target.value;
+            checkAnswer(shape, input);
+        }
+
+        // Event listener untuk setiap input shape
+        document.querySelectorAll('.shape-input').forEach(inputElement => {
+            const shape = inputElement.id;
+            inputElement.addEventListener('input', (event) => handleInput(event, shape));
+        });
+    
+        function checkAllAnswers() {
+            let allCorrect = true;
+            for (const key of Object.keys(answers[currentLevel])) {
+                const inputElement = document.getElementById(key);
+                if (!inputElement.classList.contains('correct')) {
+                    allCorrect = false;
+                    break;
+                }
+            }
+            return allCorrect;
+        }
+    
+        function moveToNextLevel() {
+            if (currentLevel === 'level1' && levelsCompleted.level1) {
+                level2Button.disabled = false;
+                level1Button.disabled = true;
+                level2Button.click();
+            } else if (currentLevel === 'level2' && levelsCompleted.level2) {
+                clearInterval(timerInterval); // Hentikan timer
+                fastestTime = timeRemaining; // Simpan waktu tersisa saat game selesai
+                showGameOverModal(); // Tampilkan modal selamat
+            }
+
+            resetCorrectInputs();
+            updateLevelButtonColors();
+        }
+
+        function showGameOverModal() {
+            const modal = document.createElement('div');
+            modal.classList.add('modal');
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h2>Congratulations!</h2>
+                    <p>Your Remaining Time: ${formatTime(fastestTime)}</p>
+                    <button class="close" onclick="restartGame()">Restart Game</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.style.display = 'flex';
+        }
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes < 10 ? '0' : ''}${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+        }
+
+        function restartGame() {
+            location.reload();
+        }
+
+
+        function clearInputs() {
+            const inputs = document.querySelectorAll('.input-group input');
+            inputs.forEach(input => {
+                input.value = '';
+                input.classList.remove('correct', 'wrong');
+                input.readOnly = false;
+                input.disabled = false;
+            });
+        }
+    
+        // function resetCorrectInputs() {
+        //     const inputs = document.querySelectorAll('.input-group input');
+        //     inputs.forEach(input => {
+        //         input.classList.remove('correct', 'wrong');
+        //         input.readOnly = false;
+        //         input.disabled = false;
+        //     });
+        // }
+    
+        function updateLevelButtonColors() {
+            if (currentLevel === 'level1') {
+                level1Button.style.backgroundColor = '#0056b3';
+                level2Button.style.backgroundColor = '#007bff';
+            } else if (currentLevel === 'level2') {
+                level2Button.style.backgroundColor = '#0056b3';
+                level1Button.style.backgroundColor = '#007bff';
+            }
+        }
+    
+        // resetButton.addEventListener('click', function () {
+        //     clearInputs();
+        // });
+    
+        function startTimer() {
+            if (isTimerRunning) return;
+            isTimerRunning = true;
+    
+            timerInterval = setInterval(() => {
+                const timerDisplay = document.getElementById('timer');
+                const timerBar = document.querySelector('.timer-bar');
+    
+                timeRemaining--;
+    
+                const minutes = Math.floor(timeRemaining / 60);
+                const seconds = timeRemaining % 60;
+                timerDisplay.textContent = `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+    
+                const percentage = (timeRemaining / 600) * 100;
+                timerBar.style.width = `${percentage}%`;
+    
+                if (percentage <= 33) {
+                    timerBar.style.background = "#ff0000";
+                } else if (percentage <= 66) {
+                    timerBar.style.background = "#ffff00";
+                } else {
+                    timerBar.style.background = "#00ff00";
+                }
+    
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    isTimerRunning = false;
+                    timerDisplay.textContent = "Time is Over!!";
+                    disableInputs();
+                }
+            }, 1000);
+        }
+    
+        function disableInputs() {
+            const inputs = document.querySelectorAll('.input-group input');
+            inputs.forEach(input => {
+                input.disabled = true;
+            });
+        }
+    </script>
+    
+
+
+
+</body>
+</html>

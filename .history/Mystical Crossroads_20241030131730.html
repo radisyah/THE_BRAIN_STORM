@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Brain Storm | Mystical Crossroads</title>
+    <style>    
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            overflow: hidden; /* Prevent scroll when overlay is active */
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9); /* Darker overlay */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999; /* Ensure overlay is on top */
+            opacity: 0;
+            animation: fadeIn 0.5s forwards; /* Fade-in animation */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .title {
+            color: #00ccff; /* Light blue for the title */
+            font-size: 3em;
+            text-align: center;
+            animation: glowing 1.5s infinite alternate;
+            text-shadow: 0 0 20px #00ccff, 0 0 30px #00ccff; /* Glowing effect */
+        }
+
+        @keyframes glowing {
+            0% { text-shadow: 0 0 20px #00ccff, 0 0 30px #00ccff; }
+            100% { text-shadow: 0 0 10px #00ccff, 0 0 20px #00ccff; }
+        }
+
+        .start-button {
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            color: white;
+            background-color: #00ccff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s; /* Transition effects */
+            box-shadow: 0 4px 10px rgba(0, 204, 255, 0.5); /* Box shadow for depth */
+        }
+
+        .start-button:hover {
+            background-color: #0099cc; /* Darker shade on hover */
+            transform: scale(1.05); /* Slight scale effect */
+        }
+
+        #main-content {
+            display: none; /* Hide main content initially */
+            padding: 20px;
+        }
+
+
+        .container {
+            display: flex; 
+            border-radius: 12px; /* Rounded corners */
+            overflow: hidden; /* Prevent overflow */
+            box-shadow: 0 8px 20px  #007bff;
+            transition: transform 0.3s ease-in-out;
+            border: 2px solid #007bff;
+        }
+
+        .container:hover {
+            transform: scale(1.02); /* Slight scale effect when hovering over the container */
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(11, 50px);
+            grid-template-rows: repeat(11, 50px);
+            gap: 5px; /* Increase gap for better spacing */
+            padding: 20px; /* Padding around the grid */
+            border-radius: 10px; /* Rounded corners */
+        }
+
+       /* Timer container styles */
+        .timer-container {
+            position: relative;
+            width: 100%;
+            height: 40px;
+            background-color: #333;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        /* Timer text styles */
+        #timer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        /* Progress bar styles */
+        .timer-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ffff00, #ff0000);
+            width: 100%;
+            transition: width 1s linear;
+            z-index: 1;
+        }
+
+        .grid-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            background-color: #ffdd99;
+            border: 1px solid #000;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, background-color 0.3s;
+            cursor: pointer;
+            position: relative;
+        } 
+
+        .grid-item .number {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #000;
+        }
+ 
+        .grid-item.operator {
+            background-color: #99ccff; /* Warna untuk operator matematika */
+        }
+
+        .grid-item.operator:hover {
+            transform: translateY(-5px);
+            background-color: #50a8ff;
+        }
+
+        .grid-item.empty:hover {
+            transform: translateY(-5px);
+        }
+
+        .grid-item:hover {
+            transform: translateY(-5px);
+            background-color: #fbc05d;
+        }
+
+        .grid-item input {
+            width: 100%;
+            height: 100%;
+            font-size: 20px;
+            text-align: center;
+            background-color: #ffffcc;
+            border: 1px solid #000;
+            border-radius: 10px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .grid-item.empty {
+            background-color: #403a3a;
+            border: 1px solid;
+        }
+
+        .grid-item.correct {
+            background-color: #d4edda;
+        }
+
+        .grid-item input.correct {
+            background-color: #d4edda;
+            font-weight: bold;
+            color: #155724;
+            pointer-events: none; /* Prevent further edits */
+            border: 2px solid #28a745;
+        }
+
+        .grid-item.wrong {
+            background-color: #f8d7da; /* Wrong background color */
+        }
+
+        .grid-item input.wrong {
+            background-color: #f8d7da; /* Wrong input field */
+            font-weight: bold;
+            color: #721c24;
+            border: 2px solid #dc3545; /* Red border for wrong */
+        }
+
+
+        .helper-number-container {
+            display: grid;
+            grid-template-columns: repeat(5, 50px); /* 6 kolom per baris */
+            grid-gap: 10px; /* Jarak antar nomor */
+            justify-content: center;
+        }
+
+        .helper-number {
+            background-color: #cce5ff; /* Warna awal biru */
+            color: black; /* Warna teks awal hitam */
+            border: 1px solid #007bff;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 20px;
+            text-align: center;
+            transition: background-color 0.5s ease, color 0.5s ease; /* Animasi transisi */
+        }
+
+        .helper-number.correct {
+            background-color: #28a745; /* Warna hijau untuk helper yang benar */
+            color: white; /* Teks berwarna putih */
+        }
+
+
+        .strikethrough {
+            text-decoration: line-through; /* Efek coret */
+            color: red; /* Warna coret */
+        }
+
+        button {
+            margin: 5px 5px;
+            padding: 10px 20px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+       
+        .close {
+            margin-top: 20px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        /* Layout for buttons and helper numbers */
+        .buttons-and-helper-numbers {
+            display: flex;
+            flex-direction: column; /* Align buttons vertically */
+            gap: 10px;
+            padding: 10px; /* Added padding */
+            background-color: #403a3a; /* Background color for buttons layout */
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0 4px 8px rgba(1, 65, 255, 0.2); /* Shadow for effect */
+            border: 1px solid #007bff;
+        }
+
+        .question-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Dua kolom */
+            gap: 10px; /* Jarak antar tombol */
+            margin-bottom: 10px; /* Jarak bawah */
+        }
+
+        #score-display {
+            font-size: 24px; /* Larger font size for better visibility */
+            margin-top: 10px; /* Spacing from the elements above */
+            padding: 10px; /* Padding around the score display */
+            background-color: #28a745; /* Green background for positive feedback */
+            color: white; /* White text color */
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+            transition: transform 0.3s; /* Add a transition for the hover effect */
+            text-align: center; /* Center align text */
+        }
+
+        #score-display:hover {
+            transform: scale(1.05); /* Slightly scale up on hover */
+            cursor: pointer; /* Change cursor to pointer on hover */
+        }
+
+        .modal-content h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .modal-content p {
+            font-size: 20px;
+            margin: 10px 0;
+        }
+
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            font-size: 24px;
+            color: #333; /* Text color */
+        }
+
+        .close {
+            margin-top: 20px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .close:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="overlay">
+        <div class="title">THE BRAIN STORM</div>
+        <div class="title">THE BRAIN STORM</div>
+        <div class="title">MISSION 1: MYSTICAL CROSSROADS</div>
+        <button class="start-button" id="startButton">PLAY NOW</button>
+    </div>
+
+    <div id="main-content">
+        <div class="container">
+            <div class="grid-container" id="grid-container">
+                <!-- Grid will be dynamically filled -->
+            </div>
+        
+            <div class="buttons-and-helper-numbers">
+                <div class="timer-container">
+                    <div id="timer">10:00</div>
+                    <div class="timer-bar"></div>
+                </div>
+        
+                <div class="question-buttons">
+                    <button id="level-1-btn" onclick="loadQuestion(1)">Round 1</button>
+                    <button id="level-2-btn" disabled onclick="loadQuestion(2)">Round 2</button>
+                    <button id="level-3-btn" disabled onclick="loadQuestion(3)">Round 3</button>
+                    <button id="level-4-btn" disabled onclick="loadQuestion(4)">Round 4</button>
+                </div>
+                <button onclick="checkAnswers()">Check Answers</button>
+                <div class="helper-number-container" id="helper-numbers">
+                    <!-- Helper numbers will be dynamically added here -->
+                </div>
+
+                <!-- <button onclick="resetAnswers()">Reset</button>  -->
+            </div>
+            <!-- Final Score Modal -->
+            <div class="modal" id="final-score-modal">
+                <div class="modal-content">
+                    <h2>Congratulations!</h2>
+                    <p id="fastest-time-display">Fastest Time: 10:00</p>
+                    <button class="close" onclick="restartGame()">Restart Game</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <video id="openingVideo" style="display:none;"  width="1280" height="720"  controls>
+        <source src="opening.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+
+  
+    
+    <script>
+        document.getElementById('startButton').addEventListener('click', function() {
+            const overlay = document.getElementById('overlay');
+            const video = document.getElementById('openingVideo');
+            overlay.style.display = 'none'; // Sembunyikan overlay
+
+            // Tampilkan video
+            video.style.display = 'block';
+            video.play();
+
+            // Setelah video selesai, tampilkan konten utama
+            video.onended = function() {
+                video.style.display = 'none'; // Sembunyikan video
+                document.getElementById('main-content').style.display = 'block'; // Tampilkan konten utama
+                loadQuestion(1);
+
+            };
+        });
+
+          const questions = {
+            1: {
+                grid: [
+                { text: '17', operator: false }, 
+                { text: '-', operator: true }, 
+                { correct: 9 },  // Input jawaban 1
+                { text: '=', operator: true }, 
+                { correct: 8 }, // Input jawaban 2
+                { empty: true },  // Grid kosong sebagai pemisah
+                { correct: 10 }, // Input jawaban 3
+                { text: '+', operator: true }, 
+                { correct: 1 }, // Input jawaban 4
+                { text: '=', operator: true }, 
+                { text: '11', operator: false }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '-', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: 'x', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '+', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '+', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { correct: 5 }, // Input jawaban 5
+                { text: '÷', operator: true }, 
+                { text: '1', operator: false },  // Input jawaban 6
+                { text: '=', operator: true }, 
+                { text: '5', operator: false },  // Input jawaban 7
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '6', operator: false }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '=', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '=', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '=', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '=', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '2', operator: false }, 
+                { text: 'x', operator: true }, 
+                { correct: 4 }, // Input jawaban 8
+                { text: '=', operator: true }, 
+                { text: '8', operator: false }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { correct: 15 }, // Input jawaban 10
+                { text: '+', operator: true }, 
+                { text: '7', operator: false }, 
+                { text: '=', operator: true }, 
+                { correct: 22 }, // Input jawaban 12
+                { text: 'x', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: 'x', operator: true }, 
+                { correct: 6 }, // Input jawaban 13
+                { text: '+', operator: true }, 
+                { correct: 25 }, // Input jawaban 14
+                { text: '=', operator: true }, 
+                { text: '31', operator: false }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '10', operator: false },  // Input jawaban 16
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '1', operator: false }, 
+                { text: '=', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '-', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '+', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '+', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '=', operator: true }, 
+                { correct: 12 }, // Input jawaban 17
+                { text: '+', operator: true }, 
+                { text: '6', operator: false },  // Input jawaban 18
+                { text: '=', operator: true }, 
+                { correct: 18 }, // Input jawaban 19
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '11', operator: false }, 
+                { text: 'x', operator: true }, 
+                { correct: 2 }, // Input jawaban 20
+                { text: '=', operator: true }, 
+                { text: '22', operator: false },  // Input jawaban 21
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '=', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '=', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '=', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { correct: 30 }, // Input jawaban 22
+                { text: '+', operator: true }, 
+                { text: '19', operator: false }, 
+                { text: '=', operator: true }, 
+                { correct: 49 }, // Input jawaban 23
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '12', operator: false }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+
+                
+                ],    
+                helpers: [6,25,8,10,1,15,9,12,18,49,2,22,5,4,30] // Helper numbers untuk soal 2
+            },
+            2: {
+                grid: [
+                
+                { text: '18', operator: false }, 
+                { text: '×', operator: true }, 
+                { correct: 5 },  // Input jawaban 1
+                { text: '=', operator: true }, 
+                { correct: 90 }, // Input jawaban 2
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '47', operator: false }, 
+                { text: '+', operator: true }, 
+                { correct: 33 }, // Input jawaban 3
+                { text: '=', operator: true }, 
+                { correct: 80 }, // Input jawaban 4
+                { text: '+', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '-', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '+', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '÷', operator: true }, 
+                { correct: 72 },  // Input jawaban 5
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { correct: 53 },  // Input jawaban 6
+                { text: '-', operator: true }, 
+                { text: '34', operator: false }, 
+                { text: '=', operator: true }, 
+                { correct: 19 },  // Input jawaban 7
+                { empty: true },  // Grid kosong sebagai pemisah
+                { correct: 4 },  // Input jawaban 8
+                { text: '=', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '-', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '=', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '=', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '=', operator: true }, 
+                { text: '90', operator: false }, 
+                { text: '-', operator: true }, 
+                { correct: 46 },  // Input jawaban 9
+                { text: '=', operator: true }, 
+                { text: '44', operator: false }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { correct: 13 },  // Input jawaban 10
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '52', operator: false }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '20', operator: false }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '=', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '+', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { correct: 81 },  // Input jawaban 11
+                { text: '÷', operator: true }, 
+                { text: '9', operator: false }, 
+                { text: '=', operator: true }, 
+                { text: '9', operator: false }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { correct: 17 },  // Input jawaban 12
+                { text: '-', operator: true }, 
+                { correct: 9 },  // Input jawaban 13
+                { text: '=', operator: true }, 
+                { correct: 8 },  // Input jawaban 14
+                { text: '÷', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '+', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '=', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '-', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '+', operator: true }, 
+                { text: '3', operator: false }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { correct: 23 },  // Input jawaban 15
+                { text: '+', operator: true }, 
+                { text: '7', operator: false }, 
+                { text: '=', operator: true }, 
+                { correct: 30 },  // Input jawaban 16
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '3', operator: false }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { correct: 3 },  // Input jawaban 17
+                { text: '=', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '=', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '=', operator: true }, 
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '=', operator: true }, 
+                { text: '27', operator: false }, 
+                { text: '+', operator: true }, 
+                { text: '32', operator: false }, 
+                { text: '=', operator: true }, 
+                { correct: 59 },  // Input jawaban 18
+                { empty: true },  // Grid kosong sebagai pemisah
+                { text: '17', operator: false }, 
+                { text: '-', operator: true }, 
+                { correct: 6 },  // Input jawaban 19
+                { text: '=', operator: false }, 
+                { correct: 11 },  // Input jawaban 20
+
+                // Tambahan grid lainnya
+                ],
+                helpers: [23, 30, 3, 11, 6, 59, 46, 13, 8, 17, 9, 72, 5, 19, 53, 90, 80, 33, 4, 81 ], // Nomor bantuan terkait jawaban
+            },
+            3: {
+                grid: [
+                    { text: '49', operator: false }, 
+                    { text: '÷', operator: true }, 
+                    { text: '7', operator: false }, 
+                    { text: '=', operator: true }, 
+                    { correct: 7 },  // Input jawaban 1
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { correct: 31 },  // Input jawaban 2
+                    { text: '+', operator: true }, 
+                    { correct: 39 },  // Input jawaban 3
+                    { text: '=', operator: true }, 
+                    { text: '70', operator: false },
+                    { text: '-', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '+', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '+', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: 'x', operator: true }, 
+                    { correct: 41 },  // Input jawaban 4
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '100', operator: false },
+                    { text: '-', operator: true }, 
+                    { correct: 19 },  // Input jawaban 5
+                    { text: '+', operator: true }, 
+                    { text: '18', operator: false },
+                    { text: '=', operator: true }, 
+                    { text: '99', operator: false },
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { correct: 2 },  // Input jawaban 6
+                    { text: '=', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '-', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '=', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '=', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '-', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '=', operator: true }, 
+                    { correct: 8 },  // Input jawaban 7
+                    { text: '+', operator: true }, 
+                    { text: '18', operator: false },
+                    { text: '=', operator: true }, 
+                    { text: '26', operator: false },
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '49', operator: false },
+                    { text: '+', operator: true }, 
+                    { correct: 91 },  // Input jawaban 8
+                    { text: '=', operator: true }, 
+                    { correct: 140 },  // Input jawaban 9
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '-', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '+', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { correct: 3 },  // Input jawaban 10
+                    { text: 'x', operator: true }, 
+                    { correct: 21 },  // Input jawaban 11
+                    { text: '=', operator: true }, 
+                    { text: '63', operator: false },
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '200', operator: false },
+                    { text: '-', operator: true }, 
+                    { correct: 62 },  // Input jawaban 12
+                    { text: '=', operator: true }, 
+                    { correct: 138 },  // Input jawaban 13
+                    { text: 'x', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '=', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '-', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '+', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '=', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '÷', operator: true }, 
+                    { text: '2', operator: false },
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '61', operator: false },
+                    { text: '-', operator: true }, 
+                    { correct: 51 },  // Input jawaban 14
+                    { text: '+', operator: true }, 
+                    { correct: 60 },  // Input jawaban 15
+                    { text: '=', operator: true }, 
+                    { text: '70', operator: false },
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { correct: 46 },  // Input jawaban 16
+                    { text: '=', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '=', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '=', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '=', operator: true }, 
+                    { correct: 6 },  // Input jawaban 17
+                    { text: 'x', operator: true }, 
+                    { text: '2', operator: false },
+                    { text: '=', operator: true }, 
+                    { correct: 12 },  // Input jawaban 18
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { correct: 260},  // Input jawaban 19
+                    { text: '-', operator: true }, 
+                    { correct: 257 },  // Input jawaban 20
+                    { text: '=', operator: true }, 
+                    { text: '3', operator: false },
+
+                ],
+                helpers: [257,6,140,12,21,3,62,138,91,260,8,2,19,41,31,7,39,51,46,60], // Helper numbers untuk soal 2
+            },
+            4: {
+                grid: [
+                    { text: '15', operator: false }, 
+                    { text: '+', operator: true }, 
+                    { correct: 16},                 
+                    { text: '=', operator: true }, 
+                    { text: '31', operator: false }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { correct: 66},    
+                    { text: '÷', operator: true }, 
+                    { text: '2', operator: false }, 
+                    { text: '=', operator: true }, 
+                    { text: '33', operator: false }, 
+                    { text: '+', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '÷', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '-', operator: true }, 
+                    { correct: 24},    
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '8', operator: false }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '27', operator: false },  
+                    { text: '-', operator: true }, 
+                    { correct: 17},    
+                    { text: '=', operator: true }, 
+                    { correct: 10},    
+                    { text: '=', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '=', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '=', operator: true }, 
+                    { correct: 39},    
+                    { text: '+', operator: true }, 
+                    { correct: 2},  
+                    { text: '=', operator: true }, 
+                    { correct: 41},  
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { correct: 9},  
+                    { text: '+', operator: true }, 
+                    { correct: 14},  
+                    { text: '=', operator: true }, 
+                    { correct: 23},  
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '-', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '-', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { correct: 72},  
+                    { text: '÷', operator: true }, 
+                    { correct: 12},  
+                    { text: '=', operator: true }, 
+                    { text: '6', operator: false }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '27', operator: false }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '+', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '=', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '=', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: 'x', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { correct: 53},  
+                    { text: '-', operator: true }, 
+                    { text: '24', operator: false }, 
+                    { text: '=', operator: true }, 
+                    { correct: 29},  
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { correct: 3},  
+                    { text: '+', operator: true }, 
+                    { correct: 1},  
+                    { text: '=', operator: true }, 
+                    { correct: 4},  
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '=', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '=', operator: true }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '96', operator: false }, 
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { text: '12', operator: false }, 
+                    { text: '+', operator: true }, 
+                    { correct: 15},  
+                    { text: '=', operator: true }, 
+                    { correct: 27},  
+                    { empty: true },  // Grid kosong sebagai pemisah
+                    { empty: true },  // Grid kosong sebagai pemisah
+                ],
+                helpers: [27,15,2,24,16,29,1,3,66,4,12,72,41,9,14,23,39,17,10,53], // Helper numbers untuk soal 2
+            }
+        };
+    
+        let timeRemaining = 600; // 8 minutes in seconds
+        let timerInterval;
+        let isTimerRunning = false;
+        let currentLevel = 1;
+                // Muat audio untuk efek suara
+        const correctSound = new Audio('correct_answer.mp3');
+        const wrongSound = new Audio('wrong_answer.mp3');
+    
+        function loadQuestion(questionNumber) {
+            const gridContainer = document.getElementById('grid-container');
+            const helperContainer = document.getElementById('helper-numbers');
+            gridContainer.innerHTML = ''; 
+            helperContainer.innerHTML = ''; 
+
+            const question = questions[questionNumber];
+            let answerNumber = 1;
+
+            question.grid.forEach((item) => {
+                const gridItem = document.createElement('div');
+                gridItem.classList.add('grid-item');
+
+                if (item.empty) {
+                    gridItem.classList.add('empty');
+                } else if (item.operator) {
+                    gridItem.classList.add('operator');
+                    gridItem.textContent = item.text;
+                } else if (item.correct !== undefined) {
+                    const input = document.createElement('input');
+                    input.setAttribute('type', 'text');
+                    input.setAttribute('data-correct', item.correct);
+                    input.classList.add('answer');
+
+                    // Event listener untuk memicu checkAnswers setiap kali ada perubahan input
+                    input.addEventListener('input', checkAnswers);
+
+                    gridItem.appendChild(input);
+                    const spanNumber = document.createElement('span');
+                    spanNumber.classList.add('number');
+                    spanNumber.textContent = answerNumber;
+                    gridItem.appendChild(spanNumber);
+                    answerNumber++;
+                } else {
+                    gridItem.textContent = item.text;
+                }
+
+                gridContainer.appendChild(gridItem);
+            });
+
+            if (!isTimerRunning) startTimer();
+
+            question.helpers.forEach(helper => {
+                const helperDiv = document.createElement('div');
+                helperDiv.classList.add('helper-number');
+                helperDiv.setAttribute('id', `helper-${helper}`);
+                helperDiv.textContent = helper;
+                helperContainer.appendChild(helperDiv);
+            });
+
+            updateLevelButtons(); // Update button colors when loading a question
+        }
+
+    
+        function startTimer() {
+            if (isTimerRunning) return;
+            isTimerRunning = true;
+    
+            timerInterval = setInterval(() => {
+                const timerDisplay = document.getElementById('timer');
+                const timerBar = document.querySelector('.timer-bar');
+    
+                timeRemaining--;
+    
+                const minutes = Math.floor(timeRemaining / 60);
+                const seconds = timeRemaining % 60;
+                timerDisplay.textContent = `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+    
+                const percentage = (timeRemaining / 600) * 100;
+                timerBar.style.width = `${percentage}%`;
+    
+                if (percentage <= 33) {
+                    timerBar.style.background = "#ff0000";
+                } else if (percentage <= 66) {
+                    timerBar.style.background = "#ffff00";
+                } else {
+                    timerBar.style.background = "#00ff00";
+                }
+    
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    isTimerRunning = false;
+                    timerDisplay.textContent = "Time is Over!!";
+                    lockInputs();
+                }
+            }, 1000);
+        }
+    
+        function lockInputs() {
+            document.querySelectorAll('.answer').forEach(input => {
+                input.disabled = true;
+            });
+    
+            const resetButton = document.querySelector('button[onclick="resetAnswers()"]');
+            if (resetButton) {
+                resetButton.disabled = true;
+            }
+        }
+    
+        function checkAnswers() {
+            const inputs = document.querySelectorAll('.answer');
+            let allCorrect = true; // Flag to check if all answers are correct
+
+            inputs.forEach(input => {
+                const correctAnswer = input.dataset.correct; // Get the correct answer
+                const userAnswer = input.value.trim(); // Get user input, trimmed
+
+                if (userAnswer === '') {
+                    // Skip if the answer is empty
+                    input.classList.remove('wrong', 'correct');
+                    allCorrect = false;
+                    return;
+                }
+
+                if (userAnswer.length < correctAnswer.length) {
+                    // Skip if answer length is less than required
+                    input.classList.remove('wrong', 'correct');
+                    allCorrect = false;
+                    return;
+                }
+
+                if (userAnswer === correctAnswer) {
+                    // Correct answer: mark as correct and play correct sound
+                    if (!input.classList.contains('correct')) { 
+                        // Mainkan suara correct secara dinamis
+                         correctSound.cloneNode(true).play();
+                    }
+                    input.classList.add('correct');
+                    input.classList.remove('wrong');
+                    input.disabled = true; // Lock input when correct
+
+                    const helperNumber = document.getElementById(`helper-${correctAnswer}`);
+                    if (helperNumber) {
+                        helperNumber.classList.add('correct'); // Mark helper number as correct
+                    }
+                } else {
+                    // Incorrect answer: mark as wrong and play wrong sound
+                    if (!input.classList.contains('wrong')) { 
+                         // Mainkan suara correct secara dinamis
+                         wrongSound.cloneNode(true).play();
+                    }
+                    input.classList.add('wrong');
+                    input.classList.remove('correct');
+                    allCorrect = false; // Set flag to false if any answer is wrong
+                }
+            });
+
+            // If all answers are correct, proceed to the next level after 1-second delay
+            if (allCorrect) {
+                setTimeout(() => proceedToNextLevel(), 1000);
+            }
+        }
+
+        let fastestTime = null; 
+    
+        function proceedToNextLevel() {
+            if (currentLevel < 4) {
+                currentLevel++;
+                updateLevelButtons();
+                loadQuestion(currentLevel);
+            } else {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+    
+                if (fastestTime === null || timeRemaining < fastestTime) {
+                    fastestTime = timeRemaining;
+                }
+    
+                showGameOverModal();
+                resetGame();
+            }
+        }
+    
+        function showGameOverModal() {
+            const modal = document.createElement('div');
+            modal.classList.add('modal');
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h2>Congratulations!</h2>
+                    <p>Your Remaining Time: ${formatTime(fastestTime)}</p>
+                    <button class="close" onclick="restartGame()">Restart Game</button>
+                    <button class="next-mission" onclick="goToNextMission()">Next Mission</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.style.display = 'flex';
+        }
+
+        // Function to redirect to the next mission
+        function goToNextMission() {
+            window.location.href = 'Impossible Memory.html';
+        }
+
+    
+        function formatTime(fastestTime) {
+            const minutes = Math.floor(fastestTime / 60);
+            const seconds = fastestTime % 60;
+            return `0${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+        }
+    
+        function restartGame() {
+            location.reload();
+        }
+    
+        function updateLevelButtons() {
+            for (let i = 1; i <= 4; i++) {
+                const levelButton = document.getElementById(`level-${i}-btn`);
+                if (i === currentLevel) {
+                    levelButton.disabled = false;
+                    levelButton.style.backgroundColor = "#0056b3";
+                    levelButton.style.color = "white";
+                } else {
+                    levelButton.disabled = true;
+                    levelButton.style.backgroundColor = "#007bff";
+                    levelButton.style.color = "white";
+                }
+            }
+        }
+    
+        function resetAnswers() {
+            const inputs = document.querySelectorAll('.answer');
+            inputs.forEach(input => {
+                input.value = ''; 
+                input.classList.remove('correct', 'wrong'); 
+                input.disabled = false; 
+            });
+    
+            const helpers = document.querySelectorAll('.helper-number');
+            helpers.forEach(helper => {
+                helper.classList.remove('correct', 'strikethrough');
+            });
+        }
+    
+    </script>
+    
+
+</body>
+</html>

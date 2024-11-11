@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Connect Game</title>
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(7, 120px);
+            grid-gap: 10px;
+            justify-content: center;
+            margin-top: 50px;
+        }
+
+        .grid-item {
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ccc;
+            position: relative;
+            background-color: white;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .highlighted {
+            background-color: lightgreen;
+        }
+
+        .blue {
+            background-color: lightblue;
+        }
+
+        .locked {
+            background-color: lightgreen;
+            cursor: not-allowed;
+        }
+
+        .selected {
+            background-color: lightblue;
+        }
+    </style>
+</head>
+<body>
+
+<div class="grid-container" id="grid-container">
+    <!-- Grid items will be dynamically added via JavaScript -->
+</div>
+
+<script>
+    const correctPaths = [
+        [1, 6, 7],    // Path 1 -> 6 -> 7
+        [2, 3, 8],    // Path 2 -> 3 -> 8
+        [4, 9, 10, 5] // Path 4 -> 9 -> 10 -> 5
+    ];
+
+    let currentPath = []; // Store the current selected path
+    let lockedGrids = new Set(); // Store grids that are locked
+
+    // Define the grid data (for example, the numbers or values to be displayed)
+    const gridData = [
+        1, 2, 3, 4, 5, 6, 7,
+        8, '√625', 9, 10, 11, '√2025', 12,
+        13, 14, '45', 15, 16, '√1225', '√225',
+        17, 18, 19, 20, '√25', 21, 22,
+        23, 24, 25, 26, 27, 28, 29,
+        30, 31, 32, 33, 34, 35, '66',
+        '5', '15', '25', '35', 36, 37, '√4225'
+    ];
+
+    // Generate grid items dynamically
+    const gridContainer = document.getElementById("grid-container");
+    for (let i = 0; i < gridData.length; i++) {
+        const gridItem = document.createElement("div");
+        gridItem.classList.add("grid-item");
+        gridItem.setAttribute("data-number", i + 1);
+        gridItem.innerText = gridData[i]; // Display the corresponding value
+
+        gridContainer.appendChild(gridItem);
+    }
+
+    // Add event listener to each grid item
+    document.querySelectorAll(".grid-item").forEach(item => {
+        item.addEventListener("click", (event) => {
+            const clickedNumber = parseInt(event.currentTarget.getAttribute("data-number"));
+
+            // If the grid is locked, don't allow clicking
+            if (lockedGrids.has(clickedNumber)) {
+                return;
+            }
+
+            // Check if the selected grid is in the correct path
+            if (currentPath.length === 0 || isValidStep(clickedNumber)) {
+                currentPath.push(clickedNumber);
+                item.classList.add("blue");
+
+                // Highlight the current path
+                highlightCurrentPath();
+
+                // If the path is complete, lock it
+                if (isPathComplete()) {
+                    lockPath();
+                }
+            } else {
+                // If the path is invalid, reset
+                resetInvalidPath(clickedNumber);
+            }
+        });
+    });
+
+    function isValidStep(clickedNumber) {
+        const lastStep = currentPath[currentPath.length - 1];
+        return correctPaths.some(path => {
+            const indexLastStep = path.indexOf(lastStep);
+            return indexLastStep !== -1 && path[indexLastStep + 1] === clickedNumber;
+        });
+    }
+
+    function highlightCurrentPath() {
+        document.querySelectorAll(".grid-item").forEach(item => {
+            const number = parseInt(item.getAttribute("data-number"));
+            if (currentPath.includes(number)) {
+                item.classList.add("blue");
+            } else {
+                item.classList.remove("blue");
+            }
+        });
+    }
+
+    function isPathComplete() {
+        return correctPaths.some(path => {
+            return path.every(step => currentPath.includes(step));
+        });
+    }
+
+    function lockPath() {
+        currentPath.forEach(step => {
+            lockedGrids.add(step);
+            document.querySelector(`[data-number="${step}"]`).classList.add("locked");
+        });
+        currentPath = [];
+    }
+
+    function resetInvalidPath(clickedNumber) {
+        document.querySelectorAll(".grid-item").forEach(item => {
+            const number = parseInt(item.getAttribute("data-number"));
+            if (currentPath.includes(number) && number !== clickedNumber) {
+                item.classList.remove("blue");
+            }
+        });
+        currentPath = currentPath.filter(number => number === clickedNumber || correctPaths.some(path => path.includes(number)));
+    }
+</script>
+
+</body>
+</html>

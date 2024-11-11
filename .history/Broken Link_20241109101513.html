@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Connect Game</title>
+    <style>
+        .grid-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 50px;
+        }
+
+        .grid-item {
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ccc;
+            position: relative;
+            background-color: white;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .circle {
+            width: 60px;
+            height: 60px;
+            background-color: lightgray;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .highlighted {
+            background-color: lightgreen;
+        }
+
+        .disabled {
+            background-color: lightgray;
+            cursor: not-allowed;
+        }
+
+        .empty {
+            background-color: transparent;
+            cursor: pointer;
+        }
+
+        .selected {
+            background-color: lightblue;
+        }
+    </style>
+</head>
+<body>
+
+<div class="grid-container">
+    <!-- Grid with numbers (active) -->
+    <div class="grid-item" data-number="1"><div class="circle">1</div></div>
+    <div class="grid-item empty" data-number="2"><div class="circle"></div></div>
+    <div class="grid-item empty" data-number="3"><div class="circle"></div></div>
+    <div class="grid-item empty" data-number="4"><div class="circle"></div></div>
+    <div class="grid-item" data-number="5"><div class="circle">5</div></div>
+</div>
+
+<script>
+    let selectedGrid = null;
+
+    const correctOrder = [1, 5]; // Urutan yang benar dari grid
+    let currentOrder = [];
+
+    // Menambahkan event listener ke setiap grid-item
+    document.querySelectorAll(".grid-item").forEach(item => {
+        // Hanya aktifkan klik jika grid-item memiliki angka
+        if (item.getAttribute("data-number")) {
+            item.addEventListener("click", (event) => {
+                const clickedNumber = parseInt(event.currentTarget.getAttribute("data-number"));
+                
+                if (!selectedGrid) {
+                    // Jika belum ada grid yang dipilih, pilih grid ini
+                    selectedGrid = clickedNumber;
+                    event.currentTarget.classList.add("selected");
+                } else {
+                    // Jika sudah ada grid yang dipilih, sambungkan dengan grid ini
+                    if (selectedGrid !== clickedNumber) {
+                        currentOrder.push(selectedGrid, clickedNumber);
+                        highlightInBetween(selectedGrid, clickedNumber);
+                        validateOrder();
+                    }
+                    // Reset selection setelah sambungan dibuat
+                    selectedGrid = null;
+                    clearSelections();
+                }
+            });
+        }
+    });
+
+    function highlightInBetween(start, end) {
+        // Menyorot grid yang ada di antara dua grid yang disambungkan
+        document.querySelectorAll(".grid-item").forEach(item => {
+            const number = parseInt(item.getAttribute("data-number"));
+            item.classList.remove("highlighted");
+
+            if (number >= start && number <= end) {
+                item.classList.add("highlighted");
+            }
+        });
+    }
+
+    function validateOrder() {
+        // Memvalidasi apakah urutan yang disambungkan benar
+        if (currentOrder.length === correctOrder.length) {
+            if (JSON.stringify(currentOrder) === JSON.stringify(correctOrder)) {
+                highlightCorrect();
+            }
+        }
+    }
+
+    function highlightCorrect() {
+        // Menyorot grid yang sudah terhubung dengan benar
+        document.querySelectorAll(".grid-item").forEach(item => {
+            const number = parseInt(item.getAttribute("data-number"));
+            if (correctOrder.includes(number)) {
+                item.classList.add("highlighted");
+            }
+        });
+    }
+
+    function clearSelections() {
+        // Menghapus seleksi grid yang dipilih
+        document.querySelectorAll(".grid-item").forEach(item => {
+            item.classList.remove("selected");
+        });
+    }
+</script>
+
+</body>
+</html>

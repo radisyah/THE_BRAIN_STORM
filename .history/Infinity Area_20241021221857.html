@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinity Area</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #f0f0f0 0%, #d9d9d9 100%);
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #403a3a;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px  #007bff;
+            border: 2px solid #007bff;
+            transition: transform 0.3s ease;
+        }
+
+        /* Timer container styles */
+        .timer-container {
+            position: relative;
+            width: 210%;
+            height: 40px;
+            background-color: #333;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        /* Timer text styles */
+        #timer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        /* Progress bar styles */
+        .timer-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ffff00, #ff0000);
+            width: 100%;
+            transition: width 1s linear;
+            z-index: 1;
+        }
+
+        .container:hover {
+            transform: scale(1.02);
+        }
+
+        .gambar-geometri {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 20px;
+        }
+
+        .gambar-geometri img {
+            width: 450px;
+            height: 450px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+
+        .gambar-geometri img:hover {
+            transform: scale(1.05);
+        }
+
+        .input-geometri {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-gap: 20px;
+            margin-left: 40px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .input-group label {
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .input-group input {
+            width: 160px;
+            height: 45px;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: none;
+            background-color: #ffdd99;
+            text-align: center;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .input-group input:hover {
+            transform: translateY(-5px);
+            background-color: #fbc05d;
+        }
+
+        #periksa, #reset {
+            grid-column: span 2;
+            width: 400px;
+            height: 55px;
+            background-color: #007bff;
+            color: white;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        #periksa:hover, #reset:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .input-group input.correct {
+            background-color: #28a745; /* Hijau untuk benar */
+            color: white;
+            border: 2px solid #155724;
+            pointer-events: none; /* Menonaktifkan interaksi */
+        }
+
+        .input-group input.wrong {
+            background-color: #dc3545; /* Merah untuk salah */
+            color: white;
+            border: 2px solid #721c24;
+        }
+
+        /* Styling untuk tombol level */
+        .level-buttons {
+            grid-column: span 2;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .level-buttons button {
+            width: 195px;
+            height: 50px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .level-buttons button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+   
+        #score-display {
+            width: 195%;
+            font-size: 24px; /* Larger font size for better visibility */
+            margin-top: 10px; /* Spacing from the elements above */
+            padding: 10px; /* Padding around the score display */
+            background-color: #28a745; /* Green background for positive feedback */
+            color: white; /* White text color */
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+            transition: transform 0.3s; /* Add a transition for the hover effect */
+            text-align: center; /* Center align text */
+        }
+
+        #score-display:hover {
+            transform: scale(1.05); /* Slightly scale up on hover */
+            cursor: pointer; /* Change cursor to pointer on hover */
+        }
+
+        .modal-content h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .modal-content p {
+            font-size: 20px;
+            margin: 10px 0;
+        }
+
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            font-size: 24px;
+            color: #333; /* Text color */
+        }
+
+        .close {
+            margin-top: 20px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .close:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Gambar di kiri -->
+        <div class="gambar-geometri">
+            <img src="monyet.png" alt="monyet" id="geometri-gambar">
+        </div>
+
+        <!-- Input dan tombol di kanan -->
+        <div class="input-geometri">
+                 <!-- Timer -->
+        <div class="timer-container">
+            <div id="timer">10:00</div>
+            <div class="timer-bar"></div>
+        </div>
+        <br>
+            <div class="input-group">
+                <label for="rhombuses">Rhombuses:</label>
+                <input type="text" id="rhombuses" placeholder="Answer">
+            </div>
+            <div class="input-group">
+                <label for="trapezoids">Trapezoids:</label>
+                <input type="text" id="trapezoids" placeholder="Answer">
+            </div>
+            <div class="input-group">
+                <label for="parallelograms">Parallelograms:</label>
+                <input type="text" id="parallelograms" placeholder="Answer">
+            </div>
+            <div class="input-group">
+                <label for="triangles">Triangles:</label>
+                <input type="text" id="triangles" placeholder="Answer">
+            </div>
+            <div class="input-group">
+                <label for="squares">Squares:</label>
+                <input type="text" id="squares" placeholder="Answer">
+            </div>
+            <div class="input-group hidden" id="hexagon-group">
+                <label for="hexagons">Hexagons:</label>
+                <input type="text" id="hexagons" placeholder="Answer">
+            </div>
+
+            <button id="periksa">Check Answers</button>
+            <div id="score-display" style="font-size: 20px; margin-top: 10px;">Score: 0</div>
+
+            <div class="level-buttons">
+                <button id="level1" disabled>Level 1</button>
+                <button id="level2" disabled>Level 2</button>
+            </div>
+            <button id="reset">Reset</button>
+
+          
+
+        </div>
+    </div>
+</body>
+
+<script>
+    const gambarGeometri = document.getElementById('geometri-gambar');
+    const level1Button = document.getElementById('level1');
+    const level2Button = document.getElementById('level2');
+    const resetButton = document.getElementById('reset');
+    const periksaButton = document.getElementById('periksa');
+    const hexagonGroup = document.getElementById('hexagon-group');
+
+    const answers = {
+        level1: {
+            rhombuses: 290,
+            trapezoids: 100,
+            parallelograms: 255,
+            triangles: 171,
+            squares: 315
+        },
+        level2: {
+            rhombuses: 182,
+            trapezoids: 380,
+            parallelograms: 175,
+            triangles: 429,
+            squares: 189,
+            hexagons: 258
+        }
+    };
+
+    let currentLevel = 'level1'; // Default to Level 1
+    let levelsCompleted = { level1: false, level2: false };
+
+    // Timer Variables
+    let timeRemaining = 600; // 10 minutes in seconds
+    let timerInterval;
+    let isTimerRunning = false;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Sembunyikan input hexagons saat halaman dimuat
+        hexagonGroup.classList.add('hidden');
+        startTimer(); // Mulai timer saat halaman dimuat
+        updateLevelButtonColors();
+    });
+
+    level1Button.addEventListener('click', function () {
+        if (levelsCompleted.level1) return;
+        gambarGeometri.src = 'monyet.png';
+        gambarGeometri.alt = 'monyet';
+        currentLevel = 'level1';
+        hexagonGroup.classList.add('hidden');
+        clearInputs();
+        updateLevelButtonColors();
+    });
+
+    level2Button.addEventListener('click', function () {
+        if (levelsCompleted.level2 || !levelsCompleted.level1) return;
+        gambarGeometri.src = 'bus.png';
+        gambarGeometri.alt = 'bus';
+        currentLevel = 'level2';
+        hexagonGroup.classList.remove('hidden');
+        clearInputs();
+        updateLevelButtonColors();
+    });
+
+
+
+    let score = 0; // Skor dimulai dari 0
+    let answeredInputs = {}; // Untuk melacak input yang sudah dinilai
+
+    // Fungsi untuk memperbarui tampilan skor
+    function updateScoreDisplay() {
+        const scoreDisplay = document.getElementById('score-display');
+        scoreDisplay.textContent = `Score: ${score}`;
+    }
+
+    // Modifikasi fungsi checkAnswer tanpa mengubah warna hijau yang sudah benar
+    function checkAnswer(shape, input) {
+        const correctAnswer = answers[currentLevel][shape];
+        const inputElement = document.getElementById(shape);
+        inputElement.classList.remove('wrong'); // Pastikan hanya warna merah yang dihapus untuk jawaban salah
+
+        // Cek apakah input ini sudah dinilai sebelumnya
+        if (input !== '' && !answeredInputs[shape]) {
+            if (parseInt(input) === correctAnswer) {
+                inputElement.classList.add('correct');
+                inputElement.readOnly = true; // Tetap mengunci input jika benar
+                score += 200; // Tambah skor untuk jawaban benar
+            } else {
+                inputElement.classList.add('wrong');
+                score -= 100; // Kurangi skor untuk jawaban salah
+            }
+            answeredInputs[shape] = true; // Tandai input ini sebagai sudah dinilai
+            updateScoreDisplay(); // Perbarui tampilan skor
+            return true;
+        }
+        return false;
+    }
+
+    // Reset fungsi ini untuk mengatur ulang input yang telah dijawab ketika reset manual
+    function clearInputs() {
+        const inputs = document.querySelectorAll('.input-group input');
+        inputs.forEach(input => {
+            input.value = '';
+            input.classList.remove('correct', 'wrong');
+            input.readOnly = false;
+            input.disabled = false;
+        });
+        answeredInputs = {}; // Reset penilaian input ketika semua input direset
+    }
+
+    // Event listener tombol periksa yang akan memanggil checkAllAnswers
+    periksaButton.addEventListener('click', function () {
+        let correct = checkAllAnswers();
+
+        // Jika semua jawaban benar, perbarui status penyelesaian level dan pindah ke level berikutnya
+        if (correct) {
+            levelsCompleted[currentLevel] = true;  // Pastikan level ini ditandai sebagai selesai
+            setTimeout(moveToNextLevel, 1000);     // Jeda 1 detik sebelum pindah level
+        }
+    });
+
+    // Fungsi yang memeriksa semua jawaban pada satu level
+    function checkAllAnswers() {
+        let allCorrect = true;  // Asumsikan semua benar di awal
+
+        // Ambil nilai dari semua input pada level ini
+        const rhombusesInput = document.getElementById('rhombuses').value;
+        const trapezoidsInput = document.getElementById('trapezoids').value;
+        const parallelogramsInput = document.getElementById('parallelograms').value;
+        const trianglesInput = document.getElementById('triangles').value;
+        const squaresInput = document.getElementById('squares').value;
+        const hexagonsInput = currentLevel === 'level2' ? document.getElementById('hexagons').value : null;
+
+        // Periksa jawaban satu per satu
+        allCorrect = checkAnswer('rhombuses', rhombusesInput) && allCorrect;
+        allCorrect = checkAnswer('trapezoids', trapezoidsInput) && allCorrect;
+        allCorrect = checkAnswer('parallelograms', parallelogramsInput) && allCorrect;
+        allCorrect = checkAnswer('triangles', trianglesInput) && allCorrect;
+        allCorrect = checkAnswer('squares', squaresInput) && allCorrect;
+
+        // Jika di level 2, periksa hexagons juga
+        if (currentLevel === 'level2' && hexagonsInput !== null) {
+            allCorrect = checkAnswer('hexagons', hexagonsInput) && allCorrect;
+        }
+
+        return allCorrect;  // Kembalikan apakah semua benar
+    }
+
+    // Fungsi untuk pindah ke level berikutnya
+    function moveToNextLevel() {
+        if (currentLevel === 'level1' && levelsCompleted.level1) {
+            level2Button.disabled = false;  // Aktifkan tombol level 2
+            level1Button.disabled = true;   // Nonaktifkan tombol level 1
+            level2Button.click();           // Otomatis pindah ke level 2
+        } else if (currentLevel === 'level2' && levelsCompleted.level2) {
+            resetToLevel1();  // Kembali ke level 1 setelah menyelesaikan level 2
+        }
+
+        // Setelah pindah level, reset jawaban yang sudah benar ke kondisi semula
+        resetCorrectInputs();
+        updateLevelButtonColors();
+    }
+
+
+    // Fungsi untuk reset input setelah berpindah level
+    function resetCorrectInputs() {
+        const inputs = document.querySelectorAll('.input-group input');
+        inputs.forEach(input => {
+            input.classList.remove('correct', 'wrong'); // Reset semua kelas warna
+            input.readOnly = false; // Kembalikan input ke editable
+            input.disabled = false; // Aktifkan kembali input
+        });
+        answeredInputs = {}; // Reset tracking input yang sudah dinilai
+    }
+
+    function updateLevelButtonColors() {
+        if (currentLevel === 'level1') {
+            level1Button.style.backgroundColor = '#0056b3'; // Green
+            level2Button.style.backgroundColor = '#007bff'; // Gray
+        } else if (currentLevel === 'level2') {
+            level2Button.style.backgroundColor = '#0056b3'; // Green
+            level1Button.style.backgroundColor = '#007bff'; // Gray
+        }
+    }
+
+    resetButton.addEventListener('click', function () {
+        clearInputs();
+    });
+
+    // Timer Functions
+    function startTimer() {
+        if (isTimerRunning) return;  // Cek apakah timer sedang berjalan
+        isTimerRunning = true;
+
+        timerInterval = setInterval(() => {
+            const timerDisplay = document.getElementById('timer');
+            const timerBar = document.querySelector('.timer-bar');
+
+            timeRemaining--;
+
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            timerDisplay.textContent = `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+
+            const percentage = (timeRemaining / 600) * 100;
+            timerBar.style.width = `${percentage}%`;
+
+            if (percentage <= 33) {
+                timerBar.style.background = "#ff0000";  // Warna merah untuk waktu kritis
+            } else if (percentage <= 66) {
+                timerBar.style.background = "#ffff00";  // Warna kuning untuk peringatan
+            } else {
+                timerBar.style.background = "#00ff00";  // Warna hijau untuk waktu aman
+            }
+
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                timerDisplay.textContent = "Time is Over!!";
+                lockInputs();  // Kunci semua input saat waktu habis
+            }
+        }, 1000);
+    }
+
+    function resetTimer() {
+        clearInterval(timerInterval);  // Hentikan timer yang ada sebelum reset
+        timeRemaining = 600;  // Reset waktu ke 10 menit
+        isTimerRunning = false;  // Set flag timer berjalan ke false
+        startTimer();  // Mulai ulang timer
+    }
+
+    function resetToLevel1() {
+        level1Button.disabled = false;
+        level2Button.disabled = true;
+        levelsCompleted = { level1: false, level2: false }; // Reset completion status
+        level1Button.click(); // Pindah ke Level 1
+        resetTimer(); // Reset timer setelah pindah ke Level 1
+    }
+
+    function lockInputs() {
+        document.querySelectorAll('.input-group input').forEach(input => {
+            input.disabled = true;
+        });
+
+        resetButton.disabled = true;
+    }
+
+
+
+</script>
+
+
+</body>
+</html>

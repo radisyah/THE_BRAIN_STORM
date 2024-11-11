@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Connect Game</title>
+    <style>
+        .grid-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 50px;
+        }
+
+        .grid-item {
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ccc;
+            position: relative;
+            background-color: white;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .circle {
+            width: 60px;
+            height: 60px;
+            background-color: lightgray;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .highlighted {
+            background-color: lightgreen; /* Hijau ketika benar */
+        }
+
+        .blue {
+            background-color: lightblue; /* Biru untuk jalur sementara */
+        }
+
+        .selected {
+            background-color: lightblue;
+        }
+    </style>
+</head>
+<body>
+
+<div class="grid-container">
+    <!-- Grid with numbers (active) -->
+    <div class="grid-item" data-number="1"><div class="circle">1</div></div>
+    <div class="grid-item" data-number="2"><div class="circle">2</div></div>
+    <div class="grid-item" data-number="3"><div class="circle">3</div></div>
+    <div class="grid-item" data-number="4"><div class="circle">4</div></div>
+    <div class="grid-item" data-number="5"><div class="circle">5</div></div>
+</div>
+
+<script>
+    let selectedGrid = null;
+    const correctOrder = [1, 2, 3, 4, 5];  // Urutan yang benar
+    let currentOrder = [];
+
+    // Menambahkan event listener ke setiap grid-item
+    document.querySelectorAll(".grid-item").forEach(item => {
+        // Aktifkan klik pada semua grid-item
+        item.addEventListener("click", (event) => {
+            const clickedNumber = parseInt(event.currentTarget.getAttribute("data-number"));
+            
+            // Periksa apakah grid yang dipilih sesuai dengan urutan
+            if (currentOrder.length === 0 || clickedNumber === correctOrder[currentOrder.length]) {
+                currentOrder.push(clickedNumber);
+                item.classList.add("blue");
+
+                // Menandai grid yang sudah terhubung
+                highlightCorrectOrder(currentOrder);
+
+                // Jika urutan sudah lengkap, semua grid menjadi hijau
+                if (currentOrder.length === correctOrder.length) {
+                    highlightCorrect();
+                }
+            } else {
+                // Jika urutannya salah, reset
+                alert("Urutan salah! Coba lagi.");
+                resetGrid();
+            }
+        });
+    });
+
+    function highlightCorrectOrder(currentOrder) {
+        // Tandai semua grid yang sudah dipilih dengan urutan yang benar
+        document.querySelectorAll(".grid-item").forEach(item => {
+            const number = parseInt(item.getAttribute("data-number"));
+            if (currentOrder.includes(number)) {
+                item.classList.add("blue");
+            } else {
+                item.classList.remove("blue");
+            }
+        });
+    }
+
+    function highlightCorrect() {
+        // Menyorot semua grid yang terhubung dengan benar (hijau)
+        document.querySelectorAll(".grid-item").forEach(item => {
+            const number = parseInt(item.getAttribute("data-number"));
+            if (correctOrder.includes(number)) {
+                item.classList.remove("blue");  // Hapus biru
+                item.classList.add("highlighted");  // Tambahkan hijau
+            }
+        });
+    }
+
+    function resetGrid() {
+        // Reset semua grid dan urutan
+        document.querySelectorAll(".grid-item").forEach(item => {
+            item.classList.remove("blue", "highlighted");
+        });
+        currentOrder = [];
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terrible Hunt</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #f0f0f0, #d9d9d9); /* Smooth gradient background */
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background-color: #2b2b2b; /* Dark background for contrast */
+            border-radius: 20px;
+            box-shadow: 0 8px 20px #007bff;
+            padding: 30px;
+            border: 2px solid #007bff;
+            transition: transform 0.3s ease-in-out;
+        }
+
+          /* Timer container styles */
+          .timer-container {
+            position: relative;
+            width: 100%;
+            height: 40px;
+            background-color: #333;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        /* Timer text styles */
+        #timer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        /* Progress bar styles */
+        .timer-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ffff00, #ff0000);
+            width: 100%;
+            transition: width 1s linear;
+            z-index: 1;
+        }
+
+        .container:hover {
+            transform: scale(1.02); /* Slight scale effect when hovering over the container */
+        }
+
+        /* Hexagonal grid container */
+        .hex-grid {
+            display: grid;
+            grid-template-columns: repeat(11, 60px);
+            grid-gap: 20px; /* Adjust gap between hexagons for better spacing */
+            justify-content: center;
+            margin-right: 30px;
+        }
+
+        .hex {
+            position: relative;
+            width: 60px;
+            height: 69.28px;
+            background: #ffdd99;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: black;
+            clip-path: polygon(
+                50% 0%, 
+                100% 25%, 
+                100% 75%, 
+                50% 100%, 
+                0% 75%, 
+                0% 25%
+            );
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+            margin: -10px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add shadow to hexagons */
+        }
+
+        /* Hover effect with larger shadow and movement */
+        .hex:hover {
+            background-color: #ffd166;
+            transform: translateY(-10px) scale(1.05); /* Larger transform effect */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+        }
+
+        /* Mengatur gaya ketika benar atau salah */
+        .hex.correct {
+            background-color: #28a745; /* Green for correct */
+            color: white;
+            box-shadow: 0 6px 12px rgba(0, 255, 0, 0.3); /* Green shadow */
+        }
+
+        .hex.wrong {
+            background-color: #dc3545; /* Red for wrong */
+            color: white;
+            box-shadow: 0 6px 12px rgba(255, 0, 0, 0.3); /* Red shadow */
+        }
+
+        /* Tombol dan styling */
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .level-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px; /* More rounded buttons */
+            padding: 12px;
+            margin: 8px 0;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: background-color 0.3s, box-shadow 0.3s, transform 0.3s;
+            width: 220px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Soft shadow for buttons */
+        }
+
+        .level-button:hover {
+            background-color: #0056b3;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+            transform: translateY(-3px); /* Slight movement on hover */
+        }
+    </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="hex-grid" id="hex-grid">
+        <!-- Grid hexagonal will be dynamically populated -->
+    </div>
+
+    <div class="button-container">
+        <button class="level-button" id="level1-btn" onclick="selectLevel(1)">Level 1</button>
+        <button class="level-button" id="level2-btn" onclick="selectLevel(2)" disabled>Level 2</button>
+        <br>
+        <div class="timer-container">
+            <div id="timer">05:00</div>
+            <div class="timer-bar"></div>
+        </div>
+    </div>
+</div>
+</body>
+
+<script>
+    let correctNumbers = [];
+    let wrongAttempts = 0;
+    let currentLevel = 1;
+    let isGridDisabled = false;
+    let isTimerRunning = false;
+    let timerInterval;
+    const timeLimit = 300;
+    let timeRemaining = timeLimit;
+
+    const timerDisplay = document.getElementById('timer');
+    const timerBar = document.querySelector('.timer-bar');
+
+    function selectLevel(level) {
+        currentLevel = level;
+        correctNumbers = generateCorrectNumbers(level);
+        generateHexGrid();
+        wrongAttempts = 0;
+        isGridDisabled = false;
+        
+        // Set button styles and disable/enable accordingly
+        document.getElementById('level1-btn').disabled = level !== 1;
+        document.getElementById('level2-btn').disabled = level !== 2;
+        updateButtonStyles();
+
+        // Start the timer if it hasn’t started yet
+        if (!isTimerRunning) {
+            startTimer();
+        }
+    }
+
+    function updateButtonStyles() {
+        document.getElementById('level1-btn').style.backgroundColor = currentLevel === 1 ? "#4CAF50" : "#ccc";
+        document.getElementById('level2-btn').style.backgroundColor = currentLevel === 2 ? "#4CAF50" : "#ccc";
+    }
+
+    function startTimer() {
+        if (isTimerRunning) return;
+        isTimerRunning = true;
+
+        timerInterval = setInterval(() => {
+            timeRemaining--;
+
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            timerDisplay.textContent = `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+
+            const percentage = (timeRemaining / timeLimit) * 100;
+            timerBar.style.width = `${percentage}%`;
+            timerBar.style.background = percentage <= 33 ? "#ff0000" : percentage <= 66 ? "#ffff00" : "#00ff00";
+
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                timerDisplay.textContent = "Time is Over";
+                disableGridInteractions();
+            }
+        }, 1000);
+    }
+
+    function disableGridInteractions() {
+        isGridDisabled = true;
+        const hexGrid = document.getElementById('hex-grid');
+        Array.from(hexGrid.children).forEach(hexItem => {
+            hexItem.style.pointerEvents = 'none';
+        });
+        const resetButton = document.getElementById('reset');
+        if (resetButton) {
+            resetButton.disabled = true;
+            resetButton.style.pointerEvents = 'none';
+        }
+    }
+
+    function generateCorrectNumbers(level) {
+        return level === 1 ? getPrimes(1, 121) : getPerfectSquares(122, 242);
+    }
+
+    function generateHexGrid() {
+        const hexGrid = document.getElementById('hex-grid');
+        hexGrid.innerHTML = ''; // Clear the grid
+
+        let number = (currentLevel === 1) ? 121 : (currentLevel - 1) * 121 + 1; // Set initial number based on level
+        const totalHex = 121;
+
+        for (let i = 0; i < totalHex; i++) {
+            const hex = document.createElement('div');
+            hex.classList.add('hex');
+            hex.textContent = number;
+
+            (function(num) {
+                hex.addEventListener('click', function() {
+                    if (!isGridDisabled) {
+                        if (correctNumbers.includes(num)) {
+                            hex.classList.add('correct');
+                            if (currentLevel === 1) {
+                                checkAllPrimesGuessed();
+                            } else if (currentLevel === 2) {
+                                checkAllPerfectSquaresGuessed();
+                            }
+                        } else {
+                            hex.classList.add('wrong');
+                            wrongAttempts++;
+                            if (wrongAttempts >= 2) {
+                                setTimeout(resetHexColors, 1000);
+                            }
+                        }
+                    }
+                });
+            })(number);
+
+            hexGrid.appendChild(hex);
+            number = (currentLevel === 1) ? number - 1 : number + 1;
+        }
+    }
+
+    function checkAllPerfectSquaresGuessed() {
+        const allCorrectHexes = document.querySelectorAll('.hex.correct');
+        if (allCorrectHexes.length === correctNumbers.length) {
+            // All correct numbers in Level 2 are guessed, refresh the page
+            location.reload();
+        }
+    }
+
+
+    function checkAllPrimesGuessed() {
+        const allCorrectHexes = document.querySelectorAll('.hex.correct');
+        if (allCorrectHexes.length === correctNumbers.length) {
+            if (currentLevel === 1) {
+                currentLevel = 2; // Move to Level 2
+                correctNumbers = generateCorrectNumbers(currentLevel); // Generate correct numbers for Level 2
+                generateHexGrid(); // Regenerate the grid for Level 2
+                startTimer(); // Restart timer if necessary
+            }
+        }
+    }
+
+
+    function resetHexColors() {
+        document.querySelectorAll('.hex').forEach(hex => {
+            hex.classList.remove('correct', 'wrong');
+        });
+
+        correctNumbers = generateCorrectNumbers(currentLevel);
+        generateHexGrid();
+        wrongAttempts = 0;
+    }
+
+    function getPrimes(start, end) {
+        const primes = [];
+        for (let i = start; i <= end; i++) {
+            if (isPrime(i)) primes.push(i);
+        }
+        return primes;
+    }
+
+    function isPrime(num) {
+        if (num <= 1) return false;
+        for (let i = 2; i <= Math.sqrt(num); i++) {
+            if (num % i === 0) return false;
+        }
+        return true;
+    }
+
+    function getPerfectSquares(start, end) {
+        const squares = [];
+        for (let i = Math.ceil(Math.sqrt(start)); i <= Math.floor(Math.sqrt(end)); i++) {
+            squares.push(i * i);
+        }
+        return squares;
+    }
+
+    window.onload = function() {
+        selectLevel(1);
+    };
+</script>
+
+</body>
+</html>

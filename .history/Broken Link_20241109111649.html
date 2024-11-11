@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Grid with Path Markers</title>
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(5, 120px); /* 5 columns */
+            grid-gap: 10px;
+            justify-content: center;
+            margin-top: 50px;
+        }
+
+        .grid-item {
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ccc;
+            position: relative;
+            background-color: white;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .grid-first {
+            background-color: lightgreen;
+        }
+
+        .grid-mid {
+            background-color: lightyellow;
+        }
+
+        .grid-last {
+            background-color: lightcoral;
+        }
+    </style>
+</head>
+<body>
+
+<div class="grid-container" id="gridContainer">
+    <!-- Grid items will be dynamically generated here -->
+</div>
+
+<script>
+    const totalItems = 10; // Number of grid items
+    const correctPaths = [
+        { path: [1, 6, 7], markers: ['grid-first', 'grid-mid', 'grid-last'] }, // Path 1 -> 6 -> 7
+        { path: [2, 3, 8], markers: ['grid-first', 'grid-mid', 'grid-last'] }, // Path 2 -> 3 -> 8
+        { path: [4, 9, 10, 5], markers: ['grid-first', 'grid-mid', 'grid-mid', 'grid-last'] } // Path 4 -> 9 -> 10 -> 5
+    ];
+
+    // Dynamically generate the grid items
+    const gridContainer = document.getElementById('gridContainer');
+    for (let i = 1; i <= totalItems; i++) {
+        const gridItem = document.createElement('div');
+        gridItem.classList.add('grid-item');
+        gridItem.setAttribute('data-number', i);
+        gridItem.textContent = i;
+
+        // Loop through paths to apply path markers dynamically
+        correctPaths.forEach((pathData) => {
+            const { path, markers } = pathData;
+            const pathIndex = path.indexOf(i);
+
+            if (pathIndex !== -1) {
+                const markerClass = markers[pathIndex]; // Get the corresponding marker class
+                gridItem.classList.add(markerClass);
+            }
+        });
+
+        gridContainer.appendChild(gridItem);
+    }
+</script>
+
+</body>
+</html>

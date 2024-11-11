@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Connect Game</title>
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(7, 120px); /* Grid 7 kolom */
+            grid-gap: 10px;
+            justify-content: center;
+            margin-top: 50px;
+        }
+
+        .grid-item {
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ccc;
+            position: relative;
+            background-color: white;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .highlighted {
+            background-color: lightgreen; /* Hijau ketika benar */
+        }
+
+        .blue {
+            background-color: lightblue; /* Biru untuk jalur sementara */
+        }
+
+        .locked {
+            background-color: lightgreen; /* Grid yang sudah benar */
+            cursor: not-allowed; /* Tidak dapat dipilih lagi */
+        }
+
+        .selected {
+            background-color: lightblue;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Tombol untuk memilih ronde -->
+<div class="button-container">
+    <button class="button" id="round1">Round 1</button>
+    <button class="button" id="round2">Round 2</button>
+</div>
+
+<!-- Kontainer untuk grid -->
+<div class="grid-container" id="gridContainer"></div>
+
+<script>
+    // Data untuk grid di setiap ronde
+    const gridDataRound1 = [
+        [1, 2, 3, 4, 5, 6, 7],
+        [8, 9, 10, 11, 12, 13, 14],
+        [15, 16, 17, 18, 19, 20, 21],
+        [22, 23, 24, 25, 26, 27, 28],
+        [29, 30, 31, 32, 33, 34, 35],
+        [36, 37, 38, 39, 40, 41, 42],
+        [43, 44, 45, 46, 47, 48, 49]
+    ];
+
+    const gridDataRound2 = [
+        [1, 2, 3, 4, 5, 6, 7],
+        [8, 9, 10, 11, 12, 13, 14],
+        [15, 16, 17, 18, 19, 20, 21],
+        [22, 23, 24, 25, 26, 27, 28],
+        [29, 30, 31, 32, 33, 34, 35],
+        [36, 37, 38, 39, 40, 41, 42],
+        [43, 44, 45, 46, 47, 48, 49]
+    ];
+
+    let currentRound = 1; // Default ronde 1
+    let currentPath = []; // Menyimpan jalur yang sedang dipilih
+    let lockedGrids = new Set(); // Menyimpan grid yang sudah benar dan terkunci
+
+    const gridContainer = document.getElementById('gridContainer');
+    const round1Button = document.getElementById('round1');
+    const round2Button = document.getElementById('round2');
+
+    // Fungsi untuk mengisi grid berdasarkan ronde yang dipilih
+    function generateGrid(round) {
+        // Bersihkan grid sebelumnya
+        gridContainer.innerHTML = '';
+
+        // Pilih data grid berdasarkan ronde
+        const gridData = round === 1 ? gridDataRound1 : gridDataRound2;
+
+        // Generate grid berdasarkan data
+        gridData.forEach(row => {
+            row.forEach(number => {
+                const gridItem = document.createElement('div');
+                gridItem.classList.add('grid-item');
+                gridItem.setAttribute('data-number', number);
+                gridContainer.appendChild(gridItem);
+            });
+        });
+
+        // Tambahkan event listener untuk grid-item yang baru
+        document.querySelectorAll(".grid-item").forEach(item => {
+            item.addEventListener("click", (event) => {
+                const clickedNumber = parseInt(event.currentTarget.getAttribute("data-number"));
+
+                // Jika grid sudah terkunci, jangan izinkan klik
+                if (lockedGrids.has(clickedNumber)) {
+                    return;
+                }
+
+                // Periksa apakah grid yang dipilih sesuai dengan urutan
+                if (currentPath.length === 0 || isValidStep(clickedNumber)) {
+                    currentPath.push(clickedNumber);
+                    item.classList.add("blue");
+
+                    // Menandai grid yang sudah terhubung
+                    highlightCurrentPath();
+
+                    // Jika urutan sudah lengkap, semua grid menjadi hijau dan terkunci
+                    if (isPathComplete()) {
+                        lockPath();
+                    }
+                } else {
+                    // Jika urutannya salah, reset jalur yang salah saja
+                    resetInvalidPath(clickedNumber);
+                }
+            });
+        });
+    }
+
+    // Fungsi untuk validasi langkah yang dipilih
+    function isValidStep(clickedNumber) {
+        const lastStep = currentPath[currentPath.length - 1];
+        return correctPaths.some(path => {
+            const indexLastStep = path.indexOf(lastStep);
+            return indexLastStep !== -1 && path[indexLastStep + 1] === clickedNumber;
+        });
+    }
+
+    // Highlight jalur yang dipilih
+    function highlightCurrentPath() {
+        document.querySelectorAll(".grid-item").forEach(item => {
+            const number = parseInt(item.getAttribute("data-number"));
+            if (currentPath.includes(number)) {
+                item.classList.add("blue");
+            } else {
+                item.classList.remove("blue");
+            }
+        });
+    }
+
+    // Mengecek apakah jalur sudah lengkap
+    function isPathComplete() {
+        return correctPaths.some(path => {
+            return path.every(step => currentPath.includes(step));
+        });
+    }
+
+    // Mengunci jalur yang benar
+    function lockPath() {
+        currentPath.forEach(step => {
+            lockedGrids.add(step);
+            document.querySelector(`[data-number="${step}"]`).classList.add("locked");
+        });
+
+        // Reset jalur setelah terkunci, dan lanjutkan dengan jalur berikutnya
+        currentPath = [];
+    }
+
+    // Reset jalur yang salah
+    function resetInvalidPath(clickedNumber) {
+        document.querySelectorAll(".grid-item").forEach(item => {
+            const number = parseInt(item.getAttribute("data-number"));
+            if (currentPath.includes(number) && number !== clickedNumber) {
+                item.classList.remove("blue");
+            }
+        });
+
+        currentPath = currentPath.filter(number => number === clickedNumber || isPathCorrect(number));
+    }
+
+    // Event listeners untuk tombol ronde
+    round1Button.addEventListener('click', () => {
+        currentRound = 1;
+        generateGrid(currentRound);
+    });
+
+    round2Button.addEventListener('click', () => {
+        currentRound = 2;
+        generateGrid(currentRound);
+    });
+
+    // Inisialisasi grid awal (Round 1)
+    generateGrid(currentRound);
+</script>
+
+</body>
+</html>

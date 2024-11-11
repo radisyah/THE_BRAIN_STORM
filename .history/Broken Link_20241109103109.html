@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Connect Game</title>
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(5, 120px); /* Grid 2 baris, 5 kolom */
+            grid-gap: 10px;
+            justify-content: center;
+            margin-top: 50px;
+        }
+
+        .grid-item {
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ccc;
+            position: relative;
+            background-color: white;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .circle {
+            width: 60px;
+            height: 60px;
+            background-color: lightgray;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .highlighted {
+            background-color: lightgreen; /* Hijau ketika benar */
+        }
+
+        .blue {
+            background-color: lightblue; /* Biru untuk jalur sementara */
+        }
+
+        .locked {
+            background-color: lightgreen; /* Grid yang sudah benar */
+            cursor: not-allowed; /* Tidak dapat dipilih lagi */
+        }
+
+        .selected {
+            background-color: lightblue;
+        }
+
+        .incorrect {
+            background-color: lightcoral; /* Merah untuk jalur salah */
+        }
+    </style>
+</head>
+<body>
+
+<div class="grid-container">
+    <!-- Grid with numbers (active) -->
+    <div class="grid-item" data-number="1"><div class="circle">1</div></div>
+    <div class="grid-item" data-number="2"><div class="circle">2</div></div>
+    <div class="grid-item" data-number="3"><div class="circle">3</div></div>
+    <div class="grid-item" data-number="4"><div class="circle">4</div></div>
+    <div class="grid-item" data-number="5"><div class="circle">5</div></div>
+
+    <div class="grid-item" data-number="6"><div class="circle">6</div></div>
+    <div class="grid-item" data-number="7"><div class="circle">7</div></div>
+    <div class="grid-item" data-number="8"><div class="circle">8</div></div>
+    <div class="grid-item" data-number="9"><div class="circle">9</div></div>
+    <div class="grid-item" data-number="10"><div class="circle">10</div></div>
+</div>
+
+<script>
+    const correctPaths = [
+        [1, 6, 7],    // Jalur 1 -> 6 -> 7
+        [2, 3, 8],    // Jalur 2 -> 3 -> 8
+        [4, 9, 10, 5] // Jalur 4 -> 9 -> 10 -> 5
+    ];
+
+    let currentPath = []; // Menyimpan jalur yang sedang dipilih
+    let lockedGrids = new Set(); // Menyimpan grid yang sudah benar dan terkunci
+
+    // Menambahkan event listener ke setiap grid-item
+    document.querySelectorAll(".grid-item").forEach(item => {
+        // Aktifkan klik pada semua grid-item
+        item.addEventListener("click", (event) => {
+            const clickedNumber = parseInt(event.currentTarget.getAttribute("data-number"));
+
+            // Jika grid sudah terkunci, jangan izinkan klik
+            if (lockedGrids.has(clickedNumber)) {
+                return;
+            }
+
+            // Jika ini adalah langkah pertama, beri warna biru
+            if (currentPath.length === 0) {
+                currentPath.push(clickedNumber);
+                event.currentTarget.classList.add("blue");
+            } else {
+                // Jika sudah ada langkah sebelumnya, beri warna biru sementara untuk jalur yang benar
+                currentPath.push(clickedNumber);
+                event.currentTarget.classList.add("blue");
+
+                // Cek jika grid salah dengan aturan jalur, beri warna merah
+                if (!isValidStep(clickedNumber)) {
+                    // Tunjukkan warna merah jika salah
+                    event.currentTarget.classList.add("incorrect");
+
+                    // Reset jalur jika salah
+                    setTimeout(() => {
+                        event.currentTarget.classList.remove("incorrect");
+                        resetCurrentPath();
+                    }, 1000);
+                }
+            }
+
+            // Jika jalur sudah benar, kunci grid
+            if (isCorrectPath()) {
+                lockPath();
+            }
+        });
+    });
+
+    function isCorrectPath() {
+        // Memeriksa apakah jalur yang sedang dipilih sesuai dengan jalur yang benar
+        return correctPaths.some(path => {
+            return path.every(step => currentPath.includes(step));
+        });
+    }
+
+    function isValidStep(number) {
+        // Memeriksa apakah langkah yang dipilih sesuai dengan jalur yang benar
+        const lastStep = currentPath[currentPath.length - 1];
+        return correctPaths.some(path => {
+            const indexLastStep = path.indexOf(lastStep);
+            return indexLastStep !== -1 && path[indexLastStep + 1] === number;
+        });
+    }
+
+    function lockPath() {
+        // Mengunci grid yang sudah benar dan tidak bisa dipilih lagi
+        currentPath.forEach(step => {
+            lockedGrids.add(step);
+            document.querySelector(`[data-number="${step}"]`).classList.add("locked");
+        });
+
+        // Reset jalur setelah terkunci
+        currentPath = [];
+    }
+
+    function resetCurrentPath() {
+        // Reset jalur dan beri warna biru pada langkah pertama
+        document.querySelectorAll(".grid-item").forEach(item => {
+            item.classList.remove("blue", "incorrect");
+        });
+        currentPath = [];
+    }
+</script>
+
+</body>
+</html>

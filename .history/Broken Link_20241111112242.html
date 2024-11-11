@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Brain Storm | Broken Link</title>
+    <style>
+     body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center; /* Center the content horizontally */
+    align-items: center; /* Center vertically */
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+}
+
+.container {
+    display: flex;
+    flex-direction: column; /* Stack elements vertically on small screens */
+    justify-content: center; /* Center the content */
+    align-items: center; /* Center the content */
+    background-color: #2b2b2b;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px #007bff;
+    padding: 20px; /* Reduced padding for smaller screens */
+    border: 2px solid #007bff;
+    transition: transform 0.3s ease-in-out;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); /* Responsive grid */
+    grid-gap: 10px; /* Increased gap between grid items */
+    justify-content: center;
+    margin-right: 0; /* Remove margin on small screens */
+    margin-bottom: 20px; /* Add margin for spacing */
+}
+
+.container:hover {
+    transform: scale(1.02); /* Slight scale effect when hovering over the container */
+}
+
+.grid-item {
+    width: 70px; /* Fixed width for larger screens */
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    background-color: #ffdd99;
+    border: 1px solid #000;
+    color: #000;
+    cursor: pointer;
+    position: relative;
+    border-radius: 10px;
+    transition: transform 0.3s ease-in-out;
+}
+
+.grid-item:hover {
+    transform: scale(1.10);
+}
+
+.question-buttons {
+    display: flex;
+    flex-direction: column; /* Align buttons vertically */
+    gap: 10px;
+    padding: 10px;
+    background-color: #ffdd99;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border: 1px solid #000;
+}
+
+.question-button {
+    padding: 12px 20px;
+    font-size: 18px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.question-button.active {
+    background-color: #0056b3; /* Different color for active button */
+}
+
+.question-button:hover {
+    background-color: #0056b3;
+}
+
+@media (max-width: 768px) {
+    .grid-item {
+        width: 50px; /* Adjust size for smaller screens */
+        height: 50px;
+        font-size: 18px; /* Smaller font size */
+    }
+
+    .question-button {
+        padding: 10px; /* Adjust padding for smaller buttons */
+        font-size: 16px; /* Smaller font size */
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 10px; /* Further reduce padding for very small screens */
+    }
+
+    .grid-item {
+        width: 40px; /* Further adjust size for very small screens */
+        height: 40px;
+        font-size: 16px; /* Further reduce font size */
+    }
+
+    .question-button {
+        padding: 8px; /* Further adjust padding for very small buttons */
+        font-size: 14px; /* Further reduce font size */
+    }
+}
+
+    </style>
+    
+    
+</head>
+<body>
+
+
+<div class="container">
+    <div class="grid-container" id="gridContainer">
+        <!-- Grid will be inserted dynamically here -->
+    </div>
+    <div class="question-buttons">
+        <div>
+            <button class="question-button" data-round="1" onclick="loadQuestion(1)">Round 1</button>
+            <button class="question-button" data-round="2" onclick="loadQuestion(2)">Round 2</button>
+            
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // Data untuk grid dan jalur dinamis untuk ronde 1 dan ronde 2
+    const gridDataRound1 = [
+        { number: 1, hasNumber: false },
+        { number: 2, hasNumber: false },
+        { number: 2, hasNumber: false },
+        { number: 3, hasNumber: false },
+    ];
+
+    const gridDataRound2 = [
+        { number: 1, hasNumber: '19' },
+        { number: 2, hasNumber: false },
+        { number: 3, hasNumber: false },
+    ];
+
+    const correctPathsRound1 = [
+       [1,2,3],
+    ];
+
+    const correctPathsRound2 = [
+        [1,2,3],
+
+    ];
+
+    let currentPath = []; 
+    let lockedGrids = new Set(); 
+    let currentRound = 1; // Menyimpan ronde aktif
+
+    // Fungsi untuk memuat soal berdasarkan ronde yang dipilih
+    function loadQuestion(round) {
+        // Kosongkan grid yang ada
+        const container = document.getElementById('gridContainer');
+        container.innerHTML = ''; // Hapus semua elemen grid lama
+
+        // Reset variabel global
+        currentPath = [];
+        lockedGrids.clear();
+
+        // Pilih data yang sesuai berdasarkan ronde
+        let gridData, correctPaths;
+        if (round === 1) {
+            gridData = gridDataRound1;
+            correctPaths = correctPathsRound1;
+        } else if (round === 2) {
+            gridData = gridDataRound2;
+            correctPaths = correctPathsRound2;
+        }
+
+        currentRound = round; // Perbarui ronde saat ini
+
+        // Update tampilan tombol untuk ronde
+        updateButtonState(round);
+
+        // Generate grid untuk ronde yang dipilih
+        generateGrid(gridData, correctPaths);
+    }
+
+    function updateButtonState(activeRound) {
+        document.querySelectorAll('.question-button').forEach(button => {
+            const round = parseInt(button.getAttribute('data-round'));
+            if (round === activeRound) {
+                button.classList.add('active'); // Adds active styling
+                button.disabled = false;
+            } else {
+                button.classList.remove('active');
+                button.disabled = round > activeRound; // Disable buttons for future rounds
+            }
+        });
+    }
+
+    // Fungsi untuk membuat grid berdasarkan data yang diberikan
+    function generateGrid(gridData, correctPaths) {
+        const container = document.getElementById('gridContainer');
+        gridData.forEach(item => {
+            const gridItem = document.createElement('div');
+            gridItem.classList.add('grid-item');
+            gridItem.setAttribute('data-number', item.number);
+
+            if (item.hasNumber) {
+                gridItem.textContent = item.hasNumber; // Display the string like "√625"
+            } else {
+                gridItem.classList.add('no-number');
+            }
+
+            container.appendChild(gridItem);
+
+            gridItem.addEventListener('click', (event) => {
+                handleGridClick(event, item.number, correctPaths);
+            });
+
+            if (lockedGrids.has(item.number)) {
+                gridItem.classList.add("locked");
+            }
+        });
+    }
+
+   // Fungsi untuk menangani klik pada grid
+   function handleGridClick(event, clickedNumber, correctPaths) {
+        if (lockedGrids.has(clickedNumber)) {
+            return;
+        }
+
+        if (currentPath.length === 0) {
+            currentPath.push(clickedNumber);
+            event.currentTarget.classList.add("blue");
+            return;
+        }
+
+        if (isValidStep(clickedNumber, correctPaths)) {
+            currentPath.push(clickedNumber);
+            event.currentTarget.classList.add("blue");
+
+            highlightCurrentPath();
+
+            if (isPathComplete(correctPaths)) {
+                lockPath();
+                checkRoundCompletion();
+            }
+        } else {
+            resetGrid();
+        }
+    }
+
+    function isValidStep(clickedNumber, correctPaths) {
+        const lastStep = currentPath[currentPath.length - 1];
+        return correctPaths.some(path => {
+            const indexLastStep = path.indexOf(lastStep);
+            return indexLastStep !== -1 && path[indexLastStep + 1] === clickedNumber;
+        }) || correctPaths.some(path => {
+            const indexLastStep = path.indexOf(lastStep);
+            return indexLastStep !== -1 && path[indexLastStep - 1] === clickedNumber;
+        });
+    }
+
+    function highlightCurrentPath() {
+        document.querySelectorAll(".grid-item").forEach(item => {
+            const number = parseInt(item.getAttribute("data-number"));
+            if (currentPath.includes(number)) {
+                item.classList.add("blue");
+            } else {
+                item.classList.remove("blue");
+            }
+        });
+    }
+
+    function isPathComplete(correctPaths) {
+        return correctPaths.some(path => {
+            return path.every(step => currentPath.includes(step)) || path.reverse().every(step => currentPath.includes(step));
+        });
+    }
+
+    function lockPath() {
+        currentPath.forEach(step => {
+            lockedGrids.add(step);
+            document.querySelector(`[data-number="${step}"]`).classList.add("locked");
+        });
+        currentPath = [];
+    }
+
+    function resetGrid() {
+        document.querySelectorAll(".grid-item").forEach(item => {
+            const number = parseInt(item.getAttribute("data-number"));
+            if (!lockedGrids.has(number)) {
+                item.classList.remove("blue", "highlighted", "locked");
+            }
+        });
+        currentPath = [];
+    }
+
+    
+    function checkRoundCompletion() {
+        const allPathsLocked = correctPathsRound1.every(path =>
+            path.every(step => lockedGrids.has(step))
+        );
+
+        if (currentRound === 1 && allPathsLocked) {
+            setTimeout(() => loadQuestion(2), 1000); // 1-second delay before switching to Round 2
+        } else if (currentRound === 2 && allPathsLocked) {
+            setTimeout(showGameOverModal, 1000); // 1-second delay before showing game over modal
+        }
+    }
+
+    function updateButtonStyles(activeRound) {
+        document.querySelectorAll(".question-button").forEach((button, index) => {
+            if (index + 1 === activeRound) {
+                button.classList.add("active-round");
+            } else {
+                button.classList.remove("active-round");
+            }
+        });
+    }
+
+    function showGameOverModal() {
+        const modal = document.createElement('div');
+        modal.classList.add('modal');
+        modal.innerHTML = `
+            <div class="modal-content">
+                <button class="next-mission" onclick="goToNextMission()">CLOSING SESSION</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        modal.style.display = 'flex';
+    }
+
+    function goToNextMission() {
+        document.querySelector('.modal').style.display = 'none';
+        const videoContainer = document.createElement('div');
+        videoContainer.classList.add('video-container');
+        videoContainer.innerHTML = `
+            <video id="closingVideo" src="CLOSING.mp4" autoplay controls></video>
+        `;
+        document.body.appendChild(videoContainer);
+
+        const closingVideo = document.getElementById('closingVideo');
+        closingVideo.play();
+        closingVideo.addEventListener('ended', () => {
+            window.location.href = 'opening.html';
+        });
+    }
+   
+    loadQuestion(1);
+        
+
+</script>
+
+</body>
+</html>
+
+

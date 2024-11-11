@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Connect Game</title>
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(5, 120px); /* Grid 2 baris, 5 kolom */
+            grid-gap: 10px;
+            justify-content: center;
+            margin-top: 50px;
+        }
+
+        .grid-item {
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ccc;
+            position: relative;
+            background-color: white;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .highlighted {
+            background-color: lightgreen; /* Hijau ketika benar */
+        }
+
+        .blue {
+            background-color: lightblue; /* Biru untuk jalur sementara */
+        }
+
+        .locked {
+            background-color: lightgreen; /* Grid yang sudah benar */
+            cursor: not-allowed; /* Tidak dapat dipilih lagi */
+        }
+
+        .selected {
+            background-color: lightblue;
+        }
+    </style>
+</head>
+<body>
+
+<div class="grid-container">
+    <!-- Grid with numbers (active) -->
+    <div class="grid-item" data-number="1">1</div>
+    <div class="grid-item" data-number="2">2</div>
+    <div class="grid-item" data-number="3">3</div>
+    <div class="grid-item" data-number="4">4</div>
+    <div class="grid-item" data-number="5">5</div>
+
+    <div class="grid-item" data-number="6">6</div>
+    <div class="grid-item" data-number="7">7</div>
+    <div class="grid-item" data-number="8">8</div>
+    <div class="grid-item" data-number="9">9</div>
+    <div class="grid-item" data-number="10">10</div>
+</div>
+
+<script>
+    const correctPaths = [
+        [1, 6, 7],    // Jalur 1 -> 6 -> 7
+        [2, 3, 8],    // Jalur 2 -> 3 -> 8
+        [4, 9, 10, 5] // Jalur 4 -> 9 -> 10 -> 5
+    ];
+
+    let currentPath = []; // Menyimpan jalur yang sedang dipilih
+    let lockedGrids = new Set(); // Menyimpan grid yang sudah benar dan terkunci
+
+    // Menambahkan event listener ke setiap grid-item
+    document.querySelectorAll(".grid-item").forEach(item => {
+        // Aktifkan klik pada semua grid-item
+        item.addEventListener("click", (event) => {
+            const clickedNumber = parseInt(event.currentTarget.getAttribute("data-number"));
+
+            // Jika grid sudah terkunci, jangan izinkan klik
+            if (lockedGrids.has(clickedNumber)) {
+                return;
+            }
+
+            // Jika tidak ada urutan yang dipilih, buat jalur baru
+            if (currentPath.length === 0) {
+                currentPath.push(clickedNumber);
+                item.classList.add("blue");
+                return;
+            }
+
+            // Periksa apakah grid yang dipilih sesuai dengan urutan
+            if (isValidStep(clickedNumber)) {
+                currentPath.push(clickedNumber);
+                item.classList.add("blue");
+
+                // Menandai grid yang sudah terhubung
+                highlightCurrentPath();
+
+                // Jika urutan sudah lengkap, semua grid menjadi hijau dan terkunci
+                if (isPathComplete()) {
+                    lockPath();
+                }
+            } else {
+                // Jika urutannya salah, reset
+                resetGrid();
+            }
+        });
+    });
+
+    function isValidStep(clickedNumber) {
+        // Memeriksa apakah langkah yang dipilih valid (sesuai dengan jalur)
+        const lastStep = currentPath[currentPath.length - 1];
+        return correctPaths.some(path => {
+            const indexLastStep = path.indexOf(lastStep);
+            const indexClicked = path.indexOf(clickedNumber);
+            // Periksa jika langkah valid di kedua arah (misalnya 1->6->7 atau 7->6->1)
+            return (indexLastStep !== -1 && path[indexLastStep + 1] === clickedNumber) || 
+                   (indexClicked !== -1 && path[indexClicked + 1] === lastStep);
+        });
+    }
+
+    function highlightCurrentPath() {
+        // Menandai jalur yang dipilih dengan warna biru
+        document.querySelectorAll(".grid-item").forEach(item => {
+            const number = parseInt(item.getAttribute("data-number"));
+            if (currentPath.includes(number)) {
+                item.classList.add("blue");
+            } else {
+                item.classList.remove("blue");
+            }
+        });
+    }
+
+    function highlightCorrect() {
+        // Menyorot semua grid yang terhubung dengan benar (hijau)
+        document.querySelectorAll(".grid-item").forEach(item => {
+            const number = parseInt(item.getAttribute("data-number"));
+            if (isPathCorrect(number)) {
+                item.classList.remove("blue");  // Hapus biru
+                item.classList.add("highlighted");  // Tambahkan hijau
+            }
+        });
+    }
+
+    function isPathComplete() {
+        // Memeriksa apakah urutan yang benar telah dipilih
+        return correctPaths.some(path => {
+            return path.every(step => currentPath.includes(step));
+        });
+    }
+
+    function isPathCorrect(number) {
+        // Memeriksa apakah grid termasuk dalam jalur yang benar
+        return correctPaths.some(path => path.includes(number) && path.every(step => currentPath.includes(step) || step === number));
+    }
+
+    function lockPath() {
+        // Mengunci grid yang sudah benar dan tidak bisa dipilih lagi
+        currentPath.forEach(step => {
+            lockedGrids.add(step);
+            document.querySelector(`[data-number="${step}"]`).classList.add("locked");
+        });
+
+        // Reset jalur setelah terkunci, dan lanjutkan dengan jalur berikutnya
+        currentPath = [];
+    }
+
+    function resetGrid() {
+        // Reset semua grid dan urutan
+        document.querySelectorAll(".grid-item").forEach(item => {
+            item.classList.remove("blue", "highlighted", "locked");
+        });
+        currentPath = [];
+    }
+</script>
+
+</body>
+</html>

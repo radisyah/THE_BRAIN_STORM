@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Highlight Interaction</title>
+    <style>
+        .grid-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .grid-item {
+            width: 120px; /* Ukuran lebih besar sesuai permintaan */
+            height: 120px; /* Ukuran lebih besar sesuai permintaan */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ccc;
+            position: relative;
+            background-color: white;
+        }
+
+        .circle {
+            width: 60px;
+            height: 60px;
+            background-color: lightgray;
+            border-radius: 50%;
+        }
+
+        .highlighted {
+            background-color: lightgreen;
+        }
+    </style>
+</head>
+<body>
+
+<div class="grid-container">
+    <div class="grid-item" data-number="1"><div class="circle"></div></div>
+    <div class="grid-item" data-number="2"><div class="circle"></div></div>
+    <div class="grid-item" data-number="3"><div class="circle"></div></div>
+    <div class="grid-item" data-number="4"><div class="circle"></div></div>
+</div>
+
+<script>
+    let isDragging = false;
+    let startNumber = null;
+
+    document.querySelectorAll(".grid-item").forEach(item => {
+        item.addEventListener("mousedown", (event) => {
+            isDragging = true;
+            startNumber = parseInt(event.currentTarget.getAttribute("data-number"));
+            event.currentTarget.classList.add("highlighted");
+        });
+
+        item.addEventListener("mouseup", (event) => {
+            isDragging = false;
+            const endNumber = parseInt(event.currentTarget.getAttribute("data-number"));
+            highlightInBetween(startNumber, endNumber);
+            startNumber = null;
+        });
+
+        item.addEventListener("mousemove", (event) => {
+            if (isDragging) {
+                const currentNumber = parseInt(event.currentTarget.getAttribute("data-number"));
+                if (currentNumber >= startNumber) {
+                    highlightInBetween(startNumber, currentNumber);
+                }
+            }
+        });
+    });
+
+    function highlightInBetween(start, end) {
+        document.querySelectorAll(".grid-item").forEach(item => {
+            const number = parseInt(item.getAttribute("data-number"));
+            item.classList.toggle("highlighted", number >= start && number <= end);
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Brain Storm | Broken Link</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center; /* Center the main content */
+            align-items: center; /* Center vertically */
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background-color: #2b2b2b; /* Dark background for contrast */
+            border-radius: 20px;
+            box-shadow: 0 8px 20px  #007bff;
+            padding: 30px;
+            border: 2px solid #007bff;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        /* Timer container styles */
+        .timer-container {
+            position: relative;
+            width: 100%;
+            height: 40px;
+            background-color: #333;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        /* Timer text styles */
+        #timer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        /* Progress bar styles */
+        .timer-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ffff00, #ff0000);
+            width: 100%;
+            transition: width 1s linear;
+            z-index: 1;
+        }
+
+
+        .container:hover {
+            transform: scale(1.02); /* Slight scale effect when hovering over the container */
+        }
+
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(7, 70px); /* Size increased */
+            grid-template-rows: repeat(7, 70px); /* Size increased */
+            gap: 4px; /* Increased gap */
+            position: relative;
+            margin-right: 30px; /* Space between grid and buttons */
+        }
+
+        .grid-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px; /* Increased font size */
+            background-color: #ffdd99;
+            border: 1px solid #000;
+            color: #000;
+            cursor: pointer;
+            position: relative;
+            border-radius: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .grid-item[data-number=""] {
+            background-color: #2b2b2b;
+            border: 1px solid #fbc05d;
+            cursor: default; /* Change cursor for empty grids */
+        }
+
+        .grid-item.active {
+            background-color: #fbc05d;
+        }
+
+        .grid-item:hover {
+            /* transform: translateY(-5px); */
+            background-color: #fbc05d;
+
+        }
+
+    
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .green {
+            background-color: #28a745 !important;
+        }
+
+        #resetButton {
+            padding: 12px 25px; /* Increased padding */
+            font-size: 18px; /* Increased font size */
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        #resetButton:hover {
+            background-color: #0056b3;
+        }
+
+        .question-buttons {
+            display: flex;
+            flex-direction: column; /* Align buttons vertically */
+            gap: 10px;
+            padding: 10px; /* Added padding */
+            background-color: #ffdd99; /* Background color for buttons layout */
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for effect */
+             border: 1px solid #000;
+        }
+
+        .grid-item.active:hover {
+            background-color: #fbc05d; /* Warna background berubah */
+        }
+
+        .question-button {
+            padding: 12px 20px; /* Increased padding */
+            font-size: 18px; /* Increased font size */
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .question-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="grid-container" id="grid-container">
+        <!-- Grid elements will be filled here -->
+    </div>
+
+    <div class="question-buttons">
+        <button id="resetButton">Reset</button>
+        <div>
+            <button class="question-button" onclick="loadQuestion(1)">Round 1</button>
+            <button class="question-button" onclick="loadQuestion(2)">Round 2</button>
+        </div>
+        <div>
+            <button class="question-button" onclick="loadQuestion(3)">Round 3</button>
+            <button class="question-button" onclick="loadQuestion(4)">Round 4</button>
+        </div>
+        <div class="timer-container">
+            <div id="timer">04:00</div>
+            <div class="timer-bar"></div>
+        </div>
+        
+    </div>
+</div>
+
+<canvas id="lineCanvas"></canvas>
+
+<script>
+   const canvas = document.getElementById('lineCanvas');
+const ctx = canvas.getContext('2d');
+const gridContainer = document.getElementById('grid-container');
+const resetButton = document.getElementById('resetButton');
+let activeGrid = null;
+let lines = []; // Store lines to be drawn
+let isGridDisabled = false; // Global flag to track grid disabled state
+let timeLimit = 240; // Time limit in seconds
+let timeRemaining = timeLimit;
+let isTimerRunning = false;
+let timerInterval;
+let startIndex = null;
+
+// Set initial canvas dimensions to match grid container
+canvas.width = gridContainer.offsetWidth;
+canvas.height = gridContainer.offsetHeight;
+
+// Grid data for each question
+const questions = {
+    1: [{ number: "" }, { number: "√625" },  { number: "√625" },/* Add more items */ ],
+    2: [{ number: "19" }, { number: "" }, /* Add more items */ ],
+    3: [{ number: "" }, { number: "" }, /* Add more items */ ],
+    4: [{ number: "√121" }, { number: "" }, /* Add more items */ ],
+};
+
+// Update the timer display and bar
+function updateTimer() {
+    const minutes = Math.floor(timeRemaining / 60);
+    const seconds = timeRemaining % 60;
+    timerDisplay.textContent = `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+    timerBar.style.width = `${(timeRemaining / timeLimit) * 100}%`;
+}
+
+// Start the timer
+function startTimer() {
+    if (isTimerRunning) return;
+    isTimerRunning = true;
+
+    timerInterval = setInterval(() => {
+        timeRemaining--;
+        updateTimer();
+
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            timerDisplay.textContent = "Time is Over";
+            disableGridInteractions();
+        }
+    }, 1000);
+}
+
+// Disable grid interactions when time is over
+function disableGridInteractions() {
+    isGridDisabled = true;
+    Array.from(gridContainer.children).forEach((gridItem) => {
+        gridItem.style.pointerEvents = 'none';
+    });
+    resetButton.disabled = true;
+}
+
+// Load a question and its grid data
+function loadGrid(data) {
+    gridContainer.innerHTML = '';
+    data.forEach((item, index) => {
+        const gridItem = document.createElement('div');
+        gridItem.classList.add('grid-item');
+        gridItem.dataset.number = item.number;
+        gridItem.textContent = item.number || '';
+        gridItem.dataset.index = index;
+
+        if (item.number === "") {
+            gridItem.classList.add('empty');
+        } else {
+            gridItem.addEventListener('click', () => {
+                if (!isGridDisabled) activateGrid(gridItem);
+            });
+        }
+
+        gridContainer.appendChild(gridItem);
+    });
+
+    resizeCanvas();
+}
+
+function resizeCanvas() {
+    const rect = gridContainer.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+}
+
+// Activate a grid and prepare for drawing lines
+function activateGrid(gridItem) {
+    if (activeGrid) activeGrid.classList.remove('active');
+    gridItem.classList.add('active');
+    activeGrid = gridItem;
+}
+
+// Draw a line between grids without crossing numbered grids
+function drawLine(startIndex, endIndex) {
+    const startGrid = gridContainer.children[startIndex];
+    const endGrid = gridContainer.children[endIndex];
+    const start = getCenterPosition(startGrid);
+    const end = getCenterPosition(endGrid);
+
+    ctx.beginPath();
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.strokeStyle = '#007bff';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+}
+
+// Get center coordinates of a grid item
+function getCenterPosition(gridItem) {
+    const rect = gridItem.getBoundingClientRect();
+    const containerRect = gridContainer.getBoundingClientRect();
+    return {
+        x: rect.left + rect.width / 2 - containerRect.left,
+        y: rect.top + rect.height / 2 - containerRect.top
+    };
+}
+
+// Reset active line and start drawing a new one
+function startDrawingLines() {
+    startIndex = null; // Reset start index
+    Array.from(gridContainer.children).forEach((gridItem, index) => {
+        gridItem.addEventListener('click', () => {
+            if (!isGridDisabled && gridItem.classList.contains('empty')) {
+                if (startIndex === null) {
+                    startIndex = index;
+                    gridItem.classList.add('active');
+                } else {
+                    drawLine(startIndex, index);
+                    startIndex = null;
+                }
+            }
+        });
+    });
+}
+
+// Initialize the timer and grid on load
+document.addEventListener('DOMContentLoaded', () => {
+    loadGrid(questions[1]); // Load the first question as default
+    updateTimer();
+    startTimer();
+    startDrawingLines();
+});
+
+</script>
+
+</body>
+</html>

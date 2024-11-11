@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Brainstorm | Impossible Memories</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+        }
+
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            background-color: #2b2b2b; /* Dark background for contrast */
+            border-radius: 20px;
+            box-shadow: 0 8px 20px  #007bff;
+            padding: 20px; /* Padding for container */
+            transition: transform 0.3s ease-in-out;
+            border: 2px solid #007bff;
+        }
+
+        .container:hover {
+            transform: scale(1.02); /* Slight scale effect when hovering over the container */
+        }
+
+        /* Timer container styles */
+        .timer-container {
+            position: relative;
+            width: 100%;
+            height: 40px;
+            background-color: #333;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        /* Timer text styles */
+        #timer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        /* Progress bar styles */
+        .timer-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ffff00, #ff0000);
+            width: 100%;
+            transition: width 1s linear;
+            z-index: 1;
+        }
+
+
+        .grid-container {
+            display: grid;
+            gap: 4px;
+            grid-template-columns: repeat(7, 70px); /* Ukuran grid */
+            grid-template-rows: repeat(7, 70px); /* Ukuran grid */
+            position: relative;
+         
+        }
+
+        .grid-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, background-color 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+
+        .grid-item input {
+            width: 100%;
+            height: 100%;
+            font-size: 20px;
+            text-align: center;
+            background-color: #ffdd99;
+            border: 1px solid #000;
+            border-radius: 10px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .grid-item input:hover {
+            transform: translateY(-5px);
+            background-color: #fbc05d;
+        }
+
+        .grid-item input.correct {
+            background-color: #28a745;
+            color: white;
+            pointer-events: none;
+            transition: background-color 0.5s ease, color 0.5s ease; /* Animasi transisi */
+        }
+
+
+        .grid-item input.wrong {
+            background-color: #dc3545;
+            color: white;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+
+        .button-container {
+            display: flex;
+            flex-direction: column; /* Susun tombol secara vertikal */
+            gap: 10px; /* Jarak antar tombol */
+            padding: 10px; /* Padding di dalam tombol */
+            background-color: #ffdd99; /* Warna latar untuk layout tombol */
+            border-radius: 10px; /* Sudut membulat */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Bayangan untuk efek */
+            border: 1px solid #000;
+        }
+
+        .grid-size-buttons button {
+            padding: 10px; /* Padding tombol */
+            margin-top: 10px; /* Jarak atas untuk menambah jarak antara tombol */
+        }
+
+
+        #resetButton, .question-button {
+            padding: 15px 20px; /* Padding untuk tombol */
+            font-size: 18px; /* Ukuran font */
+            cursor: pointer;
+         
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            width: 100%; /* Membuat tombol mengambil lebar penuh */
+        }
+
+        #resetButton:hover, .question-button:hover {
+            background-color: #0056b3; /* Warna hover */
+        }
+
+        .active-level {
+            background-color: #0056b3; /* Green for active level */
+        }
+
+        #score-display {
+            font-size: 24px; /* Larger font size for better visibility */
+            padding: 10px; /* Padding around the score display */
+            background-color: #28a745; /* Green background for positive feedback */
+            color: white; /* White text color */
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+            transition: transform 0.3s; /* Add a transition for the hover effect */
+            text-align: center; /* Center align text */
+        }
+
+        #score-display:hover {
+            transform: scale(1.05); /* Slightly scale up on hover */
+            cursor: pointer; /* Change cursor to pointer on hover */
+        }
+
+        .modal-content h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .modal-content p {
+            font-size: 20px;
+            margin: 10px 0;
+        }
+
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            font-size: 24px;
+            color: #333; /* Text color */
+        }
+
+        .close {
+            margin-top: 20px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .close:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="grid-container" id="grid-container">
+            <!-- Dynamic grid will be generated here -->
+        </div>
+    
+        <div class="button-container">
+            <!-- <button id="resetButton" onclick="resetAnswers()">Reset</button> -->
+            <div class="grid-size-buttons">
+                <button class="question-button" id="level1" disabled>Level 1</button>
+                <button class="question-button" id="level2" disabled>Level 2</button>
+                <button class="question-button" id="level3" disabled>Level 3</button>
+            </div>
+            <div class="timer-container">
+                <div id="timer">00:30</div>
+                <div class="timer-bar"></div>
+            </div>
+            <!-- <div id="score-display" style="font-size: 20px;">Score: 0</div> -->
+        </div>
+
+       
+    </div>
+    <!-- Final Score Modal -->
+    <div class="modal" id="final-score-modal">
+        <div class="modal-content">
+            <h2>Congratulations!</h2>
+            <p id="fastest-time-display">Fastest Time: 10:00</p>
+            <button class="close" onclick="restartGame()">Restart Game</button>
+        </div>
+    </div>
+        
+    
+
+    <script>
+        const gridSizes = {
+            3: Array(9).fill({ correct: -10 }),
+            5: Array(25).fill({ correct: 0 }),
+            7: Array(49).fill({ correct: 0 })
+        };
+
+        let currentLevel = 0; // Mulai dari gambar pertama sebelum Level 1
+        let timeRemaining = 30; // Waktu default untuk 1st Picture (30 detik)
+        let timerInterval;
+        let isTimerRunning = false;
+
+        const imageSources = {
+            1: '3x3.jpg', // Gambar pertama sebelum Level 1
+            2: '5x5.jpg', // Gambar kedua sebelum Level 2
+            3: '7x7.jpg', // Gambar ketiga sebelum Level 3
+        };
+                
+        document.getElementById('level1').disabled = false;
+        document.getElementById('level1').classList.add('active-level');
+    
+        function showFinalScoreModal() {
+            clearInterval(timerInterval); // Hentikan timer saat modal muncul
+            const fastestTimeDisplay = document.getElementById('fastest-time-display');
+
+            // Display the fastest time
+            const fastestTime = timeRemaining <= 0 ? getInitialTimeForLevel() : timeRemaining; // Assuming fastest time is tracked
+            fastestTimeDisplay.textContent = `Your Remaining Time: ${formatTime(fastestTime)}`;
+
+            // Show the modal
+            const modal = document.getElementById('final-score-modal');
+            modal.style.display = 'flex'; // Show the modal
+
+            // Optionally, add an event listener to restart the game or close the modal
+            const restartButton = document.getElementById('restart-button'); // Add your restart button element
+            restartButton.addEventListener('click', restartGame);
+        }
+
+        function formatTime(time) {
+            const minutes = Math.floor(time / 60);
+            const seconds = time % 60;
+            return `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+        }
+
+        function restartGame() {
+            clearInterval(timerInterval); // Clear any running timer
+            location.reload(); // Reload the page to restart the game
+        }
+    
+        function startTimer() {
+            if (isTimerRunning) return;
+            isTimerRunning = true;
+
+            timerInterval = setInterval(() => {
+                const timerDisplay = document.getElementById('timer');
+                const timerBar = document.querySelector('.timer-bar');
+                timeRemaining--;
+
+                // Format waktu
+                const minutes = Math.floor(timeRemaining / 60);
+                const seconds = timeRemaining % 60;
+                timerDisplay.textContent = `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+
+                // Update lebar bar timer
+                const percentage = (timeRemaining / getInitialTimeForCurrentStage()) * 100;
+                timerBar.style.width = `${percentage}%`;
+
+                // Ubah warna bar
+                timerBar.style.background = percentage <= 33 ? "#ff0000" : percentage <= 66 ? "#ffff00" : "#00ff00";
+
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    isTimerRunning = false;
+                    nextStage();
+                }
+            }, 1000);
+        }
+
+        function nextStage() {
+            if (currentLevel === 0) { // Selesai 1st Picture
+                currentLevel = 1;
+                timeRemaining = 30;
+                document.getElementById('grid-container').innerHTML = '';
+                createGrid(3); // Masuk Level 1
+            } else if (currentLevel === 1 && checkAllAnswers()) { // Selesai Level 1
+                currentLevel = 2;
+                timeRemaining = 90;
+                displayImage(imageSources[2]);
+            } else if (currentLevel === 2 && checkAllAnswers()) { // Selesai Level 2
+                currentLevel = 3;
+                timeRemaining = 120;
+                displayImage(imageSources[3]);
+            } else if (currentLevel === 3 && checkAllAnswers()) { // Selesai Level 3
+                showFinalScoreModal();
+            }
+
+            if (!isTimerRunning) startTimer();
+        }
+
+        function displayImage(imageSource) {
+            const gridContainer = document.getElementById('grid-container');
+            gridContainer.innerHTML = `<img src="${imageSource}" class="picture" alt="Stage Image">`;
+        }
+
+        function getInitialTimeForCurrentStage() {
+            return currentLevel === 0 ? 30 : currentLevel === 1 ? 30 : currentLevel === 2 ? 90 : 120;
+        }
+    
+        function getInitialTimeForLevel() {
+            return currentLevel === 1 ? 30 : currentLevel === 2 ? 60 : 90;
+        }
+    
+        function lockInputs() {
+            document.querySelectorAll('.answer').forEach(input => input.disabled = true);
+            // document.getElementById('resetButton').disabled = true;
+        }
+    
+        function createGrid(size) {
+            const gridContainer = document.getElementById('grid-container');
+            gridContainer.style.gridTemplateColumns = `repeat(${size}, 100px)`;
+            gridContainer.style.gridTemplateRows = `repeat(${size}, 100px)`;
+            gridContainer.innerHTML = ''; // Clear previous content
+    
+            const gridData = gridSizes[size];
+    
+            gridData.forEach((data, index) => {
+                const gridItem = document.createElement('div');
+                gridItem.classList.add('grid-item');
+                const input = document.createElement('input');
+                input.classList.add('answer');
+                input.setAttribute('type', 'text');
+                input.setAttribute('data-correct', data.correct);
+                input.addEventListener('input', () => checkInput(input, index));
+                gridItem.appendChild(input);
+                gridContainer.appendChild(gridItem);
+            });
+    
+            if (!isTimerRunning) startTimer();
+        }
+    
+         // Load sound effects
+        const correctSound = new Audio('correct_answer.mp3');
+        const wrongSound = new Audio('wrong_answer.mp3');
+
+        // Tambahkan di dalam fungsi checkInput setelah validasi benar/salah
+        function checkInput(input) {
+            const correctAnswer = input.dataset.correct;
+            const userAnswer = input.value.trim();
+
+            if (userAnswer.length >= correctAnswer.length) {
+                if (userAnswer === correctAnswer) {
+                    input.classList.add('correct');
+                    input.classList.remove('wrong');
+                    input.disabled = true; // Mengunci grid ketika benar
+                   // Mainkan suara correct secara dinamis
+                   correctSound.cloneNode(true).play();
+                } else {
+                    input.classList.add('wrong');
+                    input.classList.remove('correct');
+                    wrongSound.cloneNode(true).play();               
+                }
+            }
+            checkAllAnswers(); // Periksa jika semua jawaban benar
+        }
+
+
+        function checkAllAnswers() {
+            const inputs = document.querySelectorAll('.answer');
+            let allCorrect = true;
+
+            inputs.forEach(input => {
+                const correctAnswer = parseInt(input.dataset.correct);
+                const userAnswer = parseInt(input.value);
+
+                if (userAnswer !== correctAnswer) {
+                    allCorrect = false;
+                }
+            });
+
+            // Jika semua benar, lanjut ke level berikutnya
+            if (allCorrect) {
+                setTimeout(() => nextLevel(), 1000);
+            }
+        }
+
+            
+        function nextLevel() {
+            if (currentLevel === 1) {
+                currentLevel = 2;
+                document.getElementById('level2').disabled = false;
+                document.getElementById('level1').disabled = true;
+                document.getElementById('level1').classList.remove('active-level');
+                document.getElementById('level2').classList.add('active-level');
+            } else if (currentLevel === 2) {
+                currentLevel = 3;
+                document.getElementById('level3').disabled = false;
+                document.getElementById('level2').disabled = true;
+                document.getElementById('level2').classList.remove('active-level');
+                document.getElementById('level3').classList.add('active-level');
+            } else {
+                showFinalScoreModal();
+                return;
+            }
+
+            // Setel waktu dan grid untuk level berikutnya
+            timeRemaining = getInitialTimeForLevel();
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            createGrid(currentLevel === 1 ? 3 : currentLevel === 2 ? 5 : 7);
+        }
+
+    
+        cdisplayImage(imageSources[1]); // Mulai dari gambar pertama
+        startTimer();
+        
+    </script>
+    
+    
+    
+    
+
+
+</body>
+</html>
